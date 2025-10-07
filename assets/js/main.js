@@ -224,8 +224,8 @@ function searchUtentes(inputId, resultsId) {
             return;
         }
         
-        // Simular busca (substitua por chamada AJAX real)
-        fetch(`api/search_utentes.php?q=${encodeURIComponent(query)}`)
+        // Buscar utentes usando a nova API JavaScript
+        fetch(`/api/utentes/search?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
                 displaySearchResults(results, data);

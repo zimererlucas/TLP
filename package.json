@@ -1,0 +1,27 @@
+{
+  "name": "biblioteca-escolar-nextjs",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão de Biblioteca Escolar - Migrado de PHP para Next.js com Supabase",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "next": "14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.13.5",
+    "@types/react": "19.2.2",
+    "eslint": "^8.51.0",
+    "eslint-config-next": "14.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,226 +1,366 @@
-# Sistema de Biblioteca Escolar
+# Biblioteca Escolar - Sistema de Gestão
 
-Sistema completo de gestão de biblioteca desenvolvido especificamente para ser **acessível e fácil de usar por idosos**, com interface limpa, fontes grandes e navegação intuitiva.
+Sistema de gestão de biblioteca escolar **completamente migrado** de PHP/MySQL para **Next.js** com **Supabase** (PostgreSQL).
 
-## 🎯 Características Principais
+## ✅ Migração Finalizada
 
-### Acessibilidade e Usabilidade
-- **Interface limpa** com fontes grandes (18px base)
-- **Alto contraste** para melhor legibilidade
-- **Botões grandes** com labels descritivos
-- **Navegação simples** sem menus escondidos
-- **Controles de acessibilidade** (aumentar/diminuir fonte, modo alto contraste)
-- **Validação clara** de formulários
-- **Mensagens de erro amigáveis**
+Este projeto foi **100% migrado** e **todos os arquivos PHP foram removidos**:
 
-### Funcionalidades
-- ✅ **Busca de livros** por título, autor, ISBN, editora ou gênero
-- ✅ **Gestão de empréstimos** com transações seguras
-- ✅ **Registro de devoluções** com controle de atrasos
-- ✅ **CRUD de usuários** com validação de email único
-- ✅ **Relatórios detalhados** com filtros
-- ✅ **Sistema de notificações** para empréstimos em atraso
+### ❌ Removido Completamente
+- ✅ Todos os arquivos `.php` (index.php, conexao.php, login.php, etc.)
+- ✅ Todas as dependências PHP
+- ✅ Todas as referências a arquivos PHP em HTML/JS
+- ✅ Conexões MySQL
+- ✅ Sessões PHP
+
+### ✅ Implementado
+- **Next.js/JavaScript** → Ponto de entrada principal
+- **Supabase (PostgreSQL)** → Banco de dados moderno
+- **API Routes** → Substitui todos os endpoints PHP
+- **React Components** → Interface moderna
+- **Bootstrap 5** → Design original preservado
+- **Vercel Ready** → Deploy sem PHP
+
+## ✨ Funcionalidades
+
+- 📚 **Busca de Livros** - Pesquisa por título, autor, ISBN, editora ou gênero
+- 📖 **Gestão de Empréstimos** - Registro e controle de empréstimos
+- ↩️ **Devoluções** - Registro de devoluções com controle de atrasos
+- 👥 **Gestão de Usuários** - Cadastro e edição de usuários
+- 📊 **Relatórios** - Estatísticas e relatórios detalhados
+- ⚙️ **Área Administrativa** - Gestão de livros, autores, editoras e gêneros
+- ♿ **Acessibilidade** - Controles de fonte, contraste e navegação por teclado
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Backend**: PHP 7.4+ com MySQLi
-- **Frontend**: HTML5, CSS3, Bootstrap 5
-- **JavaScript**: Vanilla JS (mínimo para acessibilidade)
-- **Banco de Dados**: MySQL/MariaDB
-- **Servidor**: Apache (XAMPP)
+- **Frontend**: Next.js 14, React 18, JavaScript
+- **Backend**: Supabase (PostgreSQL)
+- **Estilização**: Bootstrap 5.3.0 (mantido do projeto original)
+- **Ícones**: Font Awesome 6.0.0
+- **Deploy**: Vercel/Netlify ready
+
+## 📋 Pré-requisitos
+
+- Node.js 18+ 
+- npm ou yarn
+- Conta no Supabase
+
+## 🚀 Instalação e Configuração
+
+### 1. Clone o repositório
+
+```bash
+git clone <url-do-repositorio>
+cd biblioteca-escolar-nextjs
+```
+
+### 2. Instale as dependências
+
+```bash
+npm install
+# ou
+yarn install
+```
+
+### 3. Configure o Supabase
+
+#### 3.1. Crie um projeto no Supabase
+1. Acesse [supabase.com](https://supabase.com)
+2. Crie uma nova conta ou faça login
+3. Clique em "New Project"
+4. Escolha sua organização e configure o projeto
+
+#### 3.2. Execute o schema SQL
+1. No painel do Supabase, vá para "SQL Editor"
+2. Execute o conteúdo do arquivo `supabase-schema.sql`
+3. Isso criará todas as tabelas, índices, triggers e dados de exemplo
+
+#### 3.3. Configure as variáveis de ambiente
+1. Copie o arquivo `env.example` para `.env.local`:
+```bash
+cp env.example .env.local
+```
+
+2. Edite `.env.local` com suas credenciais do Supabase:
+```env
+# Configurações do Supabase
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here
+
+# Configurações de desenvolvimento
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Configurações opcionais
+NODE_ENV=development
+```
+
+**Onde encontrar as credenciais:**
+- No painel do Supabase, vá em "Settings" → "API"
+- Copie a "Project URL" para `SUPABASE_URL`
+- Copie a "anon public" key para `SUPABASE_ANON_KEY`
+
+### 4. Execute o projeto
+
+```bash
+npm run dev
+# ou
+yarn dev
+```
+
+O projeto estará disponível em `http://localhost:3000`
 
 ## 📁 Estrutura do Projeto
 
 ```
-gm_biblioteca/
-├── public/                    # Ponto de entrada para o navegador
-│   ├── index.php             # Página inicial
-│   ├── livros.php            # Busca de livros
-│   ├── livro_ver.php         # Detalhes do livro
-│   ├── emprestimos.php       # Gestão de empréstimos
-│   ├── devolucoes.php        # Registro de devoluções
-│   ├── utentes.php           # CRUD de usuários
-│   ├── relatorios.php        # Relatórios da biblioteca
-│   └── assets/
-│       ├── css/
-│       │   └── style.css     # Estilos personalizados
-│       └── js/
-│           └── main.js       # Funcionalidades JavaScript
-├── includes/
-│   ├── db.php               # Conexão com banco de dados
-│   ├── header.php           # Cabeçalho comum
-│   ├── footer.php           # Rodapé comum
-│   └── functions.php        # Funções auxiliares
-├── admin/                   # Área administrativa (futura)
-├── sql/
-│   └── sample_seed.sql      # Dados de exemplo
-└── README.md               # Este arquivo
+biblioteca-escolar-nextjs/
+├── components/           # Componentes React reutilizáveis
+│   └── Layout.tsx       # Layout principal (substitui header.php/footer.php)
+├── lib/                 # Configurações e utilitários
+│   └── supabaseClient.js # Cliente Supabase e funções auxiliares
+├── pages/               # Páginas da aplicação
+│   ├── api/             # API Routes (substitui endpoints PHP)
+│   │   ├── livros.js    # CRUD completo de livros
+│   │   ├── autores.js   # CRUD de autores
+│   │   ├── utentes.js   # CRUD de utentes
+│   │   ├── editoras.js  # CRUD de editoras
+│   │   ├── requisicoes.js # CRUD de empréstimos
+│   │   ├── exemplares.js # Busca de exemplares
+│   │   ├── generos.js   # CRUD de gêneros
+│   │   ├── codigos-postais.js # Busca de códigos postais
+│   │   └── utentes/     # APIs específicas de utentes
+│   │       └── search.js # Busca de utentes (autocomplete)
+│   ├── admin/           # Área administrativa
+│   ├── livro/           # Páginas de detalhes do livro
+│   ├── _app.tsx         # Configuração global
+│   ├── index.tsx        # Página inicial
+│   ├── livros.tsx       # Busca de livros
+│   ├── gestao-livros.js # Gestão completa de livros (exemplo)
+│   ├── emprestimos.tsx  # Gestão de empréstimos
+│   ├── devolucoes.tsx   # Gestão de devoluções
+│   ├── utentes.tsx      # Gestão de usuários
+│   └── relatorios.tsx   # Relatórios
+├── styles/              # Estilos CSS
+│   └── globals.css      # Estilos globais (convertido do CSS original)
+├── supabase-schema.sql  # Schema do banco de dados
+├── package.json         # Dependências do projeto
+├── next.config.js       # Configuração do Next.js
+├── env.example          # Exemplo de variáveis de ambiente
+└── README.md           # Este arquivo
 ```
 
-## 🚀 Instalação e Configuração
+## 🔄 Comparação: PHP vs Next.js
 
-### Pré-requisitos
-- **XAMPP** instalado e funcionando
-- **PHP 7.4+**
-- **MySQL/MariaDB**
-- **Apache**
+| Aspecto | PHP Original | Next.js Migrado |
+|---------|--------------|-----------------|
+| **Backend** | MySQL + mysqli | Supabase (PostgreSQL) |
+| **Frontend** | PHP + Bootstrap | React + Bootstrap |
+| **Roteamento** | Arquivos .php | Next.js Router |
+| **API** | Endpoints PHP | API Routes |
+| **Sessões** | $_SESSION | Supabase Auth |
+| **Banco** | Queries SQL | Supabase SDK |
+| **Deploy** | Servidor PHP | Vercel/Netlify |
 
-### Passo 1: Configurar o Banco de Dados
+## 🗄️ Estrutura do Banco de Dados
 
-1. **Inicie o XAMPP** e certifique-se de que Apache e MySQL estão rodando
-
-2. **Acesse o phpMyAdmin** (http://localhost/phpmyadmin)
-
-3. **Importe o dump do banco de dados**:
-   - Crie um novo banco chamado `gm_biblioteca`
-   - Importe o arquivo SQL fornecido (dump principal)
-   - Execute o arquivo `sql/sample_seed.sql` para popular com dados de exemplo
-
-### Passo 2: Configurar o Projeto
-
-1. **Copie os arquivos** para a pasta `htdocs` do XAMPP:
-   ```
-   C:\xampp\htdocs\gm_biblioteca\
-   ```
-
-2. **Verifique as configurações** do banco de dados em `includes/db.php`:
-   ```php
-   $host = '127.0.0.1';
-   $username = 'root';
-   $password = '';
-   $database = 'gm_biblioteca';
-   ```
-
-3. **Ajuste as permissões** (se necessário):
-   - Certifique-se de que o Apache tem permissão para ler os arquivos
-   - Verifique se o PHP pode conectar ao MySQL
-
-### Passo 3: Testar a Instalação
-
-1. **Acesse o sistema** em: http://localhost/gm_biblioteca/
-
-2. **Verifique se**:
-   - A página inicial carrega corretamente
-   - Os dados de exemplo estão visíveis
-   - A busca de livros funciona
-   - Os empréstimos podem ser registrados
-
-## 📊 Schema do Banco de Dados
+O banco foi migrado de MySQL para PostgreSQL mantendo a mesma estrutura:
 
 ### Tabelas Principais
+- `utente` - Usuários da biblioteca (com NIF e auth_user_id)
+- `livro` - Catálogo de livros (com edição)
+- `autor` - Autores dos livros
+- `editora` - Editoras (com morada, email, telefone)
+- `genero` - Gêneros literários
+- `livro_exemplar` - Exemplares físicos
+- `requisicao` - Empréstimos e devoluções
+- `codigo_postal` - Códigos postais portugueses
 
-- **`livro`**: Informações dos livros (título, autor, editora, etc.)
-- **`livro_exemplar`**: Exemplares físicos dos livros
-- **`utente`**: Usuários da biblioteca
-- **`requisicao`**: Empréstimos e devoluções
-- **`autor`**: Autores dos livros
-- **`editora`**: Editoras
-- **`genero`**: Gêneros literários
-- **`codigo_postal`**: Códigos postais
+### Relacionamentos
+- Livro → Autor (N:1)
+- Livro → Editora (N:1)
+- Livro → Gênero (N:1)
+- Livro → Exemplares (1:N)
+- Utente → Requisições (1:N)
+- Exemplar → Requisições (1:N)
+- Editora → Código Postal (N:1)
+- Utente → Código Postal (N:1)
 
-### Campos Importantes
+## 🔌 APIs Criadas
 
-- **`lex_disponivel`**: 1 = disponível, 0 = emprestado
-- **`re_data_devolucao`**: NULL = empréstimo ativo, data = devolvido
-- **`uk_utente_email`**: Chave única para email de usuário
+O projeto inclui APIs REST completas para todas as operações:
 
-## 🎮 Como Usar o Sistema
+### APIs Principais
+- **`/api/livros`** - CRUD completo de livros (GET, POST, PUT, DELETE)
+- **`/api/autores`** - CRUD de autores (GET, POST, PUT, DELETE)
+- **`/api/utentes`** - CRUD de utentes (GET, POST, PUT, DELETE)
+- **`/api/editoras`** - CRUD de editoras (GET, POST, PUT, DELETE)
+- **`/api/requisicoes`** - CRUD de empréstimos (GET, POST, PUT, DELETE)
 
-### Para Bibliotecários
+### APIs Auxiliares
+- **`/api/utentes/search`** - Busca de utentes (autocomplete)
+- **`/api/exemplares`** - Busca de exemplares disponíveis
+- **`/api/generos`** - CRUD de gêneros literários
+- **`/api/codigos-postais`** - Busca de códigos postais
 
-1. **Página Inicial**: Acesse todos os atalhos principais
-2. **Buscar Livros**: Digite título, autor ou ISBN
-3. **Registrar Empréstimo**: Selecione usuário e exemplar disponível
-4. **Registrar Devolução**: Encontre o empréstimo ativo e confirme
-5. **Gerenciar Usuários**: Adicione, edite ou visualize usuários
-6. **Relatórios**: Visualize estatísticas e históricos
+### Funcionalidades das APIs
+- ✅ **Paginação** - Todas as APIs suportam paginação
+- ✅ **Busca** - Filtros de busca em tempo real
+- ✅ **Validação** - Validação de dados de entrada
+- ✅ **Relacionamentos** - Dados relacionados incluídos nas respostas
+- ✅ **Tratamento de Erros** - Mensagens de erro claras
+- ✅ **CORS** - Configurado para requisições do frontend
 
-### Funcionalidades de Acessibilidade
+## 🚀 Deploy
 
-- **Controles de Fonte**: Use os botões A+ e A- no topo
-- **Alto Contraste**: Ative o modo alto contraste
-- **Navegação por Teclado**: Use Tab para navegar
-- **Atalhos de Teclado**:
-  - `Ctrl + +`: Aumentar fonte
-  - `Ctrl + -`: Diminuir fonte
-  - `Ctrl + Shift + C`: Alternar contraste
+### Vercel (Recomendado)
 
-## 🔒 Segurança
+1. **Conecte o repositório ao Vercel:**
+   - Acesse [vercel.com](https://vercel.com)
+   - Importe o projeto do GitHub
+   - Configure as variáveis de ambiente
 
-### Implementações de Segurança
+2. **Configure as variáveis de ambiente no Vercel:**
+   ```
+   SUPABASE_URL=https://your-project-id.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key-here
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
 
-- **Prepared Statements**: Todas as queries usam prepared statements
-- **Sanitização**: Todos os inputs são sanitizados com `htmlspecialchars`
-- **Transações**: Operações críticas usam transações MySQL
-- **Validação Server-side**: Validação obrigatória no servidor
-- **Escape de Output**: Todo output é escapado
+3. **Deploy automático:**
+   - O Vercel fará deploy automaticamente a cada push
+   - O projeto estará disponível em `https://seu-projeto.vercel.app`
 
-### Boas Práticas
+### Netlify
 
-- Sempre use HTTPS em produção
-- Mantenha o PHP atualizado
-- Configure corretamente as permissões de arquivo
-- Faça backups regulares do banco de dados
+1. **Conecte o repositório ao Netlify:**
+   - Acesse [netlify.com](https://netlify.com)
+   - Importe o projeto do GitHub
+   - Configure as variáveis de ambiente
+
+2. **Configure o build:**
+   ```
+   Build command: npm run build
+   Publish directory: .next
+   ```
+
+## 🎯 Status da Migração
+
+### ✅ Completamente Finalizada
+- **0 arquivos PHP** restantes no projeto
+- **100% JavaScript/TypeScript** 
+- **100% Supabase** (sem MySQL)
+- **100% Vercel Compatible** (sem PHP)
+- **Design Bootstrap preservado** integralmente
+
+### 🔄 Conversões Realizadas
+| Arquivo PHP Original | Arquivo Next.js Migrado | Status |
+|---------------------|-------------------------|---------|
+| `index.php` | `pages/index.tsx` | ✅ Migrado |
+| `livros.php` | `pages/livros.tsx` | ✅ Migrado |
+| `livro_ver.php` | `pages/livro/[id].tsx` | ✅ Migrado |
+| `utentes.php` | `pages/utentes.tsx` | ✅ Migrado |
+| `emprestimos.php` | `pages/emprestimos.tsx` | ✅ Migrado |
+| `devolucoes.php` | `pages/devolucoes.tsx` | ✅ Migrado |
+| `relatorios.php` | `pages/relatorios.tsx` | ✅ Migrado |
+| `admin/index.php` | `pages/admin/` | ✅ Migrado |
+| `includes/header.php` | `components/Layout.tsx` | ✅ Migrado |
+| `includes/footer.php` | `components/Layout.tsx` | ✅ Migrado |
+| `includes/db.php` | `lib/supabaseClient.js` | ✅ Migrado |
+| `api/search_utentes.php` | `pages/api/utentes/search.js` | ✅ Migrado |
+
+### 🗑️ Arquivos Removidos
+- ❌ `index.php` - Removido
+- ❌ `livros.php` - Removido  
+- ❌ `livro_ver.php` - Removido
+- ❌ `utentes.php` - Removido
+- ❌ `emprestimos.php` - Removido
+- ❌ `devolucoes.php` - Removido
+- ❌ `relatorios.php` - Removido
+- ❌ `admin/index.php` - Removido
+- ❌ `includes/header.php` - Removido
+- ❌ `includes/footer.php` - Removido
+- ❌ `includes/db.php` - Removido
+- ❌ `includes/functions.php` - Removido
+- ❌ `api/search_utentes.php` - Removido
+
+## 🔧 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run dev          # Inicia servidor de desenvolvimento
+
+# Produção
+npm run build        # Gera build de produção
+npm run start        # Inicia servidor de produção
+
+# Qualidade de código
+npm run lint         # Executa ESLint
+```
+
+## 🎨 Personalização
+
+### Cores e Estilos
+O projeto mantém o CSS original convertido para `styles/globals.css`. Você pode personalizar:
+- Cores principais nas variáveis CSS
+- Tamanhos de fonte
+- Espaçamentos
+- Animações
+
+### Funcionalidades
+- Adicione novas páginas em `pages/`
+- Crie novos componentes em `components/`
+- Implemente novas APIs em `pages/api/`
 
 ## 🐛 Solução de Problemas
 
-### Problemas Comuns
+### Erro de Conexão com Supabase
+- Verifique se as variáveis de ambiente estão corretas
+- Confirme se o projeto Supabase está ativo
+- Verifique se o schema foi executado corretamente
 
-1. **Erro de Conexão com Banco**:
-   - Verifique se MySQL está rodando
-   - Confirme as credenciais em `includes/db.php`
-   - Teste a conexão no phpMyAdmin
+### Erro de Build
+- Execute `npm run type-check` para verificar erros TypeScript
+- Verifique se todas as dependências estão instaladas
+- Confirme se o Node.js está na versão 18+
 
-2. **Páginas não Carregam**:
-   - Verifique se Apache está rodando
-   - Confirme se os arquivos estão na pasta correta
-   - Verifique os logs de erro do Apache
+### Problemas de Performance
+- Use o Supabase Dashboard para monitorar queries
+- Implemente paginação onde necessário
+- Use índices adequados no banco de dados
 
-3. **Erro de Permissão**:
-   - Verifique as permissões da pasta
-   - Certifique-se de que o Apache tem acesso
+## 📚 Documentação Adicional
 
-4. **JavaScript não Funciona**:
-   - Verifique o console do navegador
-   - Confirme se Bootstrap está carregando
-   - Teste em diferentes navegadores
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [React Documentation](https://react.dev)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs)
 
-### Logs Úteis
+## 🤝 Contribuição
 
-- **Apache**: `C:\xampp\apache\logs\error.log`
-- **MySQL**: `C:\xampp\mysql\data\*.err`
-- **PHP**: Verifique `php.ini` para configurações de log
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-## 📈 Próximos Passos
+## 📄 Licença
 
-### Melhorias Futuras
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-- [ ] **Área Administrativa**: CRUD completo para livros, autores, editoras
-- [ ] **Sistema de Reservas**: Permitir reservas de livros
-- [ ] **Notificações por Email**: Avisos automáticos de vencimento
-- [ ] **Relatórios Avançados**: Gráficos e estatísticas detalhadas
-- [ ] **Backup Automático**: Sistema de backup do banco
-- [ ] **Multi-idioma**: Suporte a outros idiomas
+## 👥 Equipe
 
-### Personalização
-
-- **Cores**: Modifique as variáveis CSS em `style.css`
-- **Fontes**: Altere as fontes nas configurações CSS
-- **Layout**: Ajuste o Bootstrap conforme necessário
-- **Funcionalidades**: Adicione novas features seguindo o padrão existente
+- **Migração**: Assistente de Desenvolvimento AI
+- **Projeto Original**: Sistema PHP de Biblioteca Escolar
+- **Tecnologias**: Next.js, Supabase, TypeScript, Bootstrap
 
 ## 📞 Suporte
 
-### Documentação Adicional
-
-- **Bootstrap 5**: https://getbootstrap.com/docs/5.3/
-- **PHP MySQLi**: https://www.php.net/manual/en/book.mysqli.php
-- **XAMPP**: https://www.apachefriends.org/docs/
-
-### Contato
-
-Para suporte técnico ou dúvidas sobre o sistema, consulte a documentação ou entre em contato com a equipe de desenvolvimento.
+Para suporte e dúvidas:
+- Abra uma issue no GitHub
+- Consulte a documentação das tecnologias utilizadas
+- Verifique os logs do Supabase Dashboard
 
 ---
 
-**Desenvolvido com foco em acessibilidade e usabilidade para todos os usuários, especialmente idosos.**
+**🎉 Parabéns! Sua biblioteca escolar agora está rodando com tecnologias modernas e pronta para deploy em qualquer plataforma!**

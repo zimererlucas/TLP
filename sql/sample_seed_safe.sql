@@ -201,3 +201,4 @@ FROM requisicao
 WHERE re_data_devolucao IS NULL 
 AND re_data_prevista < CURDATE();
 
+
