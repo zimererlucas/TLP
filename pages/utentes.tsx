@@ -98,22 +98,22 @@ export default function UtentesPage() {
 
     try {
       if (editingUtente) {
-        // Atualizar usuário existente
+        // Atualizar utente existente
         const { error } = await supabase
           .from('utente')
           .update(formData)
           .eq('ut_cod', editingUtente.ut_cod);
 
         if (error) throw error;
-        setMessage({ type: 'success', text: 'Usuário atualizado com sucesso!' });
+        setMessage({ type: 'success', text: 'Utente atualizado com sucesso!' });
       } else {
-        // Criar novo usuário
+        // Criar novo utente
         const { error } = await supabase
           .from('utente')
           .insert(formData);
 
         if (error) throw error;
-        setMessage({ type: 'success', text: 'Usuário criado com sucesso!' });
+        setMessage({ type: 'success', text: 'Utente criado com sucesso!' });
       }
 
       setShowForm(false);
@@ -121,8 +121,8 @@ export default function UtentesPage() {
       resetForm();
       fetchUtentes();
     } catch (error) {
-      console.error('Erro ao salvar usuário:', error);
-      setMessage({ type: 'error', text: 'Erro ao salvar usuário' });
+      console.error('Erro ao salvar utente:', error);
+      setMessage({ type: 'error', text: 'Erro ao salvar utente' });
     } finally {
       setLoading(false);
     }
@@ -142,20 +142,25 @@ export default function UtentesPage() {
   };
 
   const handleDelete = async (ut_cod: number) => {
-    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+    if (!confirm('Tem certeza que deseja excluir este utente?')) return;
 
     try {
-      const { error } = await supabase
-        .from('utente')
-        .delete()
-        .eq('ut_cod', ut_cod);
+      const response = await fetch(`/api/utentes?id=${ut_cod}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
-      setMessage({ type: 'success', text: 'Usuário excluído com sucesso!' });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao excluir utente');
+      }
+
+      setMessage({ type: 'success', text: 'Utente excluído com sucesso!' });
       fetchUtentes();
     } catch (error) {
-      console.error('Erro ao excluir usuário:', error);
-      setMessage({ type: 'error', text: 'Erro ao excluir usuário' });
+      console.error('Erro ao excluir utente:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir utente';
+      setMessage({ type: 'error', text: errorMessage });
     }
   };
 
@@ -204,7 +209,7 @@ export default function UtentesPage() {
           {showForm && (
             <div className="card mb-4">
               <div className="card-header">
-                <h5>{editingUtente ? 'Editar Usuário' : 'Novo Usuário'}</h5>
+                <h5>{editingUtente ? 'Editar Utente' : 'Novo Utente'}</h5>
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit}>
