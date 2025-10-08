@@ -27,6 +27,11 @@
       "static/chunks/main.js",
       "static/chunks/pages/admin.js"
     ],
+    "/devolucoes": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/devolucoes.js"
+    ],
     "/emprestimos": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
@@ -36,6 +41,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/relatorios.js"
+    ],
+    "/utentes": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/utentes.js"
     ]
   },
   "ampFirstPages": []

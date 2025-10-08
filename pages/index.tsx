@@ -6,7 +6,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Layout from '../components/Layout';
-import { supabase, Requisicao, Utente, Livro } from '../lib/supabase';
 
 interface EmprestimoAtraso {
   re_cod: number;
@@ -25,45 +24,27 @@ export default function HomePage() {
 
   const fetchEmprestimosAtraso = async () => {
     try {
-      // Como não há campo re_data_prevista no schema atual, vamos buscar empréstimos sem devolução
-      const { data, error } = await supabase
-        .from('requisicao')
-        .select(`
-          re_cod,
-          re_data_requisicao,
-          livro:livro_exemplar!inner(
-            livro:livro!inner(
-              li_titulo
-            )
-          ),
-          utente:utente!inner(
-            ut_nome
-          )
-        `)
-        .is('re_data_devolucao', null);
-
-      if (error) {
-        console.error('Erro ao buscar empréstimos em atraso:', error);
-        return;
+      const res = await fetch('/api/requisicoes?status=ativo');
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json?.error || 'Falha ao carregar requisições');
       }
 
-      if (data) {
-        // Filtrar empréstimos com mais de 14 dias (considerando atraso)
-        const hoje = new Date();
-        const emprestimos = data
-          .filter(item => {
-            const dataRequisicao = new Date(item.re_data_requisicao);
-            const diasEmprestado = Math.floor((hoje.getTime() - dataRequisicao.getTime()) / (1000 * 60 * 60 * 24));
-            return diasEmprestado > 14; // Considerar atraso após 14 dias
-          })
-          .map(item => ({
-            re_cod: item.re_cod,
-            li_titulo: item.livro.livro.li_titulo,
-            ut_nome: item.utente.ut_nome,
-            re_data_prevista: item.re_data_requisicao // Usando data de requisição como referência
-          }));
-        setEmprestimosAtraso(emprestimos);
-      }
+      const hoje = new Date();
+      const emprestimos = (json.data || [])
+        .filter((item: any) => {
+          const dataRequisicao = new Date(item.re_data_requisicao);
+          const diasEmprestado = Math.floor((hoje.getTime() - dataRequisicao.getTime()) / (1000 * 60 * 60 * 24));
+          return diasEmprestado > 14;
+        })
+        .map((item: any) => ({
+          re_cod: item.re_cod,
+          li_titulo: item.exemplar?.livro?.li_titulo || 'Livro',
+          ut_nome: item.utente?.ut_nome || 'Utente',
+          re_data_prevista: item.re_data_requisicao,
+        }));
+
+      setEmprestimosAtraso(emprestimos);
     } catch (error) {
       console.error('Erro ao buscar empréstimos em atraso:', error);
     } finally {
