@@ -18,7 +18,7 @@ export default function TestApiDirectPage() {
         setStatus(`✅ API funcionando! Encontrados ${result.data?.length || 0} utentes`);
         
         if (result.data && result.data.length > 0) {
-          setStatus(prev => prev + `\n\nUtentes encontrados:\n${result.data.map(u => `- ${u.ut_nome} (${u.ut_email})`).join('\n')}`);
+          setStatus(prev => prev + `\n\nUtentes encontrados:\n${result.data.map((u: any) => `- ${u.ut_nome} (${u.ut_email})`).join('\n')}`);
         }
       } else {
         setStatus(`❌ Erro na API: ${result.error}`);
