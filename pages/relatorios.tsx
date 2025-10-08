@@ -101,7 +101,32 @@ export default function RelatoriosPage() {
         .limit(10);
 
       if (emprestimosError) throw emprestimosError;
-      setEmprestimosRecentes(emprestimosData || []);
+      
+      // Mapear dados aninhados para o formato correto
+      const emprestimosProcessados = (emprestimosData as any[])?.map((emp: any) => {
+        const utenteField = emp.utente;
+        const exemplarField = emp.exemplar;
+        const livroField = Array.isArray(exemplarField?.livro) ? exemplarField.livro[0] : exemplarField?.livro;
+        const autorField = Array.isArray(livroField?.autor) ? livroField.autor[0] : livroField?.autor;
+        
+        return {
+          re_cod: emp.re_cod,
+          re_data_requisicao: emp.re_data_requisicao,
+          utente: {
+            ut_nome: Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome
+          },
+          exemplar: {
+            livro: {
+              li_titulo: livroField?.li_titulo,
+              autor: {
+                au_nome: autorField?.au_nome
+              }
+            }
+          }
+        };
+      }) || [];
+      
+      setEmprestimosRecentes(emprestimosProcessados);
 
     } catch (error) {
       console.error('Erro ao buscar dados:', error);

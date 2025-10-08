@@ -2,10 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/devolucoes": "pages/devolucoes.js",
-  "/utentes": "pages/utentes.js",
-  "/emprestimos": "pages/emprestimos.js",
   "/relatorios": "pages/relatorios.js",
-  "/api/requisicoes": "pages/api/requisicoes.js",
-  "/admin": "pages/admin.js"
+  "/admin": "pages/admin.js",
+  "/emprestimos": "pages/emprestimos.js",
+  "/utentes": "pages/utentes.js"
 }
