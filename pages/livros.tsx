@@ -37,15 +37,39 @@ export default function LivrosPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Buscar livros quando a página carregar com parâmetros
+  // Buscar todos os livros quando a página carregar
   useEffect(() => {
     if (router.query.search) {
       const term = router.query.search as string;
       const page = router.query.page as string || '1';
       setSearchTerm(term);
       searchBooks(term, page);
+    } else if (router.isReady) {
+      // Carregar todos os livros se não houver busca
+      loadAllBooks();
     }
-  }, [router.query]);
+  }, [router.query, router.isReady]);
+
+  const loadAllBooks = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/livros?limit=100');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao buscar livros');
+      }
+
+      setSearchResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar livros');
+      setSearchResults(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const searchBooks = async (term: string, page: string = '1') => {
     if (!term.trim()) return;
@@ -163,9 +187,9 @@ export default function LivrosPage() {
             <div className="card">
               <div className="card-header">
                 <h3 className="mb-0">
-                  Resultados para "{searchTerm}"
+                  {searchTerm ? `Resultados para "${searchTerm}"` : 'Todos os Livros'}
                   <small className="text-muted ms-2">
-                    ({searchResults.pagination.totalResults} livro(s) encontrado(s))
+                    ({searchResults.pagination.totalResults} livro(s) {searchTerm ? 'encontrado(s)' : 'no total'})
                   </small>
                 </h3>
               </div>
@@ -173,8 +197,9 @@ export default function LivrosPage() {
                 {searchResults.livros.length === 0 ? (
                   <div className="alert alert-info" role="alert">
                     <i className="fas fa-info-circle me-2"></i>
-                    Nenhum livro encontrado para o termo "{searchTerm}".
-                    Tente buscar com outros termos ou verifique a ortografia.
+                    {searchTerm 
+                      ? `Nenhum livro encontrado para o termo "${searchTerm}". Tente buscar com outros termos ou verifique a ortografia.`
+                      : 'Nenhum livro cadastrado no sistema.'}
                   </div>
                 ) : (
                   <>

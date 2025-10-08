@@ -277,7 +277,7 @@ export default function RelatoriosPage() {
                   <table className="table table-hover">
                     <thead>
                       <tr>
-                        <th>Usuário</th>
+                        <th>Utente</th>
                         <th>Livro</th>
                         <th>Autor</th>
                         <th>Data do Empréstimo</th>
