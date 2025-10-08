@@ -87,9 +87,9 @@ async function handleGet(req, res) {
         )
       `)
 
-    // Aplicar filtro de busca se fornecido
+    // Aplicar filtro de busca se fornecido (apenas em campos da tabela livro)
     if (search) {
-      query = query.or(`li_titulo.ilike.%${search}%,autor.au_nome.ilike.%${search}%,li_isbn.ilike.%${search}%,editora.ed_nome.ilike.%${search}%,genero.ge_genero.ilike.%${search}%`)
+      query = query.or(`li_titulo.ilike.%${search}%,li_isbn.ilike.%${search}%`)
     }
 
     // Aplicar paginação
@@ -110,7 +110,7 @@ async function handleGet(req, res) {
       .select('*', { count: 'exact', head: true })
 
     if (search) {
-      countQuery = countQuery.or(`li_titulo.ilike.%${search}%,autor.au_nome.ilike.%${search}%,li_isbn.ilike.%${search}%,editora.ed_nome.ilike.%${search}%,genero.ge_genero.ilike.%${search}%`)
+      countQuery = countQuery.or(`li_titulo.ilike.%${search}%,li_isbn.ilike.%${search}%`)
     }
 
     const { count, error: countError } = await countQuery
@@ -120,7 +120,7 @@ async function handleGet(req, res) {
     }
 
     // Processar dados para incluir estatísticas de exemplares
-    const livrosProcessados = livros?.map(livro => {
+    let livrosProcessados = livros?.map(livro => {
       const exemplares = livro.exemplares || []
       const totalExemplares = exemplares.length
       const exemplaresDisponiveis = exemplares.filter(ex => ex.lex_disponivel).length
@@ -133,14 +133,30 @@ async function handleGet(req, res) {
       }
     }) || []
 
-    const totalPages = Math.ceil((count || 0) / parseInt(limit))
+    // Filtrar por autor, editora ou gênero se houver busca
+    if (search) {
+      const searchLower = search.toLowerCase()
+      livrosProcessados = livrosProcessados.filter(livro => {
+        const autorMatch = livro.autor?.au_nome?.toLowerCase().includes(searchLower)
+        const editoraMatch = livro.editora?.ed_nome?.toLowerCase().includes(searchLower)
+        const generoMatch = livro.genero?.ge_genero?.toLowerCase().includes(searchLower)
+        const tituloMatch = livro.li_titulo?.toLowerCase().includes(searchLower)
+        const isbnMatch = livro.li_isbn?.toLowerCase().includes(searchLower)
+        
+        return autorMatch || editoraMatch || generoMatch || tituloMatch || isbnMatch
+      })
+    }
+
+    // Usar o total de livros filtrados para paginação quando houver busca
+    const totalResults = search ? livrosProcessados.length : (count || 0)
+    const totalPages = Math.ceil(totalResults / parseInt(limit))
 
     res.status(200).json({
       livros: livrosProcessados,
       pagination: {
         currentPage: parseInt(page),
         totalPages,
-        totalResults: count || 0,
+        totalResults,
         resultsPerPage: parseInt(limit)
       }
     })

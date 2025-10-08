@@ -54,7 +54,7 @@ export default function LivrosPage() {
     setError('');
 
     try {
-      const response = await fetch(`/api/books/search?search=${encodeURIComponent(term)}&page=${page}&limit=10`);
+      const response = await fetch(`/api/livros?search=${encodeURIComponent(term)}&page=${page}&limit=10`);
       const data = await response.json();
 
       if (!response.ok) {
