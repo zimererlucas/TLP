@@ -64,7 +64,14 @@ export default function UtentesPage() {
         .order('ut_nome');
 
       if (error) throw error;
-      setUtentes(data || []);
+      
+      // Mapear codigo_postal de array para objeto
+      const utentesProcessados = (data as any[])?.map((u: any) => ({
+        ...u,
+        codigo_postal: Array.isArray(u.codigo_postal) ? u.codigo_postal[0] : u.codigo_postal
+      })) || [];
+      
+      setUtentes(utentesProcessados);
     } catch (error) {
       console.error('Erro ao buscar utentes:', error);
       setMessage({ type: 'error', text: 'Erro ao carregar utentes' });
