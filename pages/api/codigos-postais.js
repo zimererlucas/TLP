@@ -3,7 +3,7 @@
  * Gerencia códigos postais da biblioteca
  */
 
-import { supabase } from '../../../lib/supabaseClient';
+import { supabaseAdminAdmin } from '../../lib/supabaseAdminClient';
 
 export default async function handler(req, res) {
   // Configurar CORS
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
 async function getCodigosPostais(req, res) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('codigo_postal')
       .select('*')
       .order('cod_localidade');
@@ -56,7 +56,7 @@ async function createCodigoPostal(req, res) {
       return res.status(400).json({ error: 'Código postal e localidade são obrigatórios' });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('codigo_postal')
       .insert({
         cod_postal,
