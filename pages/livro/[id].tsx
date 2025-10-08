@@ -83,16 +83,7 @@ export default function LivroDetalhesPage() {
       // Buscar exemplares do livro
       const { data: exemplaresData, error: exemplaresError } = await supabase
         .from('livro_exemplar')
-        .select(`
-          lex_cod,
-          lex_estado,
-          lex_disponivel,
-          requisicao:requisicao(
-            re_data_requisicao,
-            re_data_prevista,
-            utente:utente(ut_nome)
-          )
-        `)
+        .select('lex_cod, lex_estado, lex_disponivel')
         .eq('lex_li_cod', livroId)
         .order('lex_cod');
 
@@ -100,20 +91,35 @@ export default function LivroDetalhesPage() {
         console.error('Erro ao buscar exemplares:', exemplaresError);
         setExemplares([]);
       } else {
-        const exemplaresProcessados = (exemplaresData as any[])?.map((exemplar: any) => {
-          const req = Array.isArray(exemplar.requisicao) ? exemplar.requisicao[0] : exemplar.requisicao;
-          const utenteField = req?.utente;
-          const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome;
-          return {
-            lex_cod: exemplar.lex_cod,
-            lex_estado: exemplar.lex_estado,
-            lex_disponivel: exemplar.lex_disponivel,
-            re_data_requisicao: req?.re_data_requisicao,
-            re_data_prevista: req?.re_data_prevista,
-            ut_nome: utenteNome,
-          } as Exemplar;
-        }) || [];
-        setExemplares(exemplaresProcessados);
+        // Para cada exemplar, buscar a requisição ativa (se houver)
+        const exemplaresComRequisicoes = await Promise.all(
+          (exemplaresData || []).map(async (exemplar) => {
+            // Buscar requisição ativa para este exemplar
+            const { data: requisicaoAtiva } = await supabase
+              .from('requisicao')
+              .select(`
+                re_data_requisicao,
+                re_data_prevista,
+                utente:utente(ut_nome)
+              `)
+              .eq('re_lex_cod', exemplar.lex_cod)
+              .is('re_data_devolucao', null)
+              .single();
+
+            const utenteField = requisicaoAtiva?.utente as any;
+            const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome;
+
+            return {
+              lex_cod: exemplar.lex_cod,
+              lex_estado: exemplar.lex_estado,
+              lex_disponivel: exemplar.lex_disponivel,
+              re_data_requisicao: requisicaoAtiva?.re_data_requisicao,
+              re_data_prevista: requisicaoAtiva?.re_data_prevista,
+              ut_nome: utenteNome,
+            } as Exemplar;
+          })
+        );
+        setExemplares(exemplaresComRequisicoes);
       }
 
     } catch (err) {
