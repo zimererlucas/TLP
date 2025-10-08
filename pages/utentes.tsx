@@ -144,6 +144,7 @@ export default function UtentesPage() {
   const handleDelete = async (ut_cod: number) => {
     if (!confirm('Tem certeza que deseja excluir este utente?')) return;
 
+    setLoading(true);
     try {
       const response = await fetch(`/api/utentes?id=${ut_cod}`, {
         method: 'DELETE',
@@ -155,12 +156,14 @@ export default function UtentesPage() {
         throw new Error(result.error || 'Erro ao excluir utente');
       }
 
-      setMessage({ type: 'success', text: 'Utente excluído com sucesso!' });
+      setMessage({ type: 'success', text: result.message || 'Utente excluído com sucesso!' });
       fetchUtentes();
     } catch (error) {
       console.error('Erro ao excluir utente:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir utente';
       setMessage({ type: 'error', text: errorMessage });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -329,7 +329,7 @@ async function handleDelete(req, res) {
     // Verificar se o utente existe
     const { data: existingUtente } = await supabaseAdmin
       .from('utente')
-      .select('ut_cod')
+      .select('ut_cod, ut_nome')
       .eq('ut_cod', id)
       .single()
 
@@ -345,12 +345,25 @@ async function handleDelete(req, res) {
       .is('re_data_devolucao', null)
 
     if (emprestimosError) {
-      throw emprestimosError
+      console.error('Erro ao verificar empréstimos ativos:', emprestimosError)
     }
 
     if (emprestimosAtivos && emprestimosAtivos.length > 0) {
       return res.status(400).json({ 
-        error: 'Não é possível excluir o utente pois possui empréstimos ativos' 
+        error: `Não é possível excluir o utente pois possui ${emprestimosAtivos.length} empréstimo(s) ativo(s)` 
+      })
+    }
+
+    // Verificar se há empréstimos históricos
+    const { data: todosEmprestimos } = await supabaseAdmin
+      .from('requisicao')
+      .select('re_cod')
+      .eq('re_ut_cod', id)
+
+    if (todosEmprestimos && todosEmprestimos.length > 0) {
+      // Se houver empréstimos históricos, não excluir por integridade referencial
+      return res.status(400).json({ 
+        error: `Não é possível excluir o utente pois possui histórico de ${todosEmprestimos.length} empréstimo(s). Por integridade dos dados, utentes com histórico não podem ser excluídos.` 
       })
     }
 
@@ -362,16 +375,23 @@ async function handleDelete(req, res) {
 
     if (error) {
       console.error('Erro ao excluir utente:', error)
-      return res.status(500).json({ error: 'Erro ao excluir utente' })
+      // Retornar detalhes do erro do Supabase
+      return res.status(500).json({ 
+        error: `Erro ao excluir utente: ${error.message || 'Erro desconhecido'}`,
+        details: error.details || error.hint || null
+      })
     }
 
     res.status(200).json({
       success: true,
-      message: 'Utente excluído com sucesso!'
+      message: `Utente "${existingUtente.ut_nome}" excluído com sucesso!`
     })
 
   } catch (error) {
     console.error('Erro ao excluir utente:', error)
-    res.status(500).json({ error: 'Erro interno do servidor' })
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      details: error.message 
+    })
   }
 }
