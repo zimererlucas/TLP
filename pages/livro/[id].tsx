@@ -100,14 +100,19 @@ export default function LivroDetalhesPage() {
         console.error('Erro ao buscar exemplares:', exemplaresError);
         setExemplares([]);
       } else {
-        const exemplaresProcessados = exemplaresData?.map(exemplar => ({
-          lex_cod: exemplar.lex_cod,
-          lex_estado: exemplar.lex_estado,
-          lex_disponivel: exemplar.lex_disponivel,
-          re_data_requisicao: exemplar.requisicao?.[0]?.re_data_requisicao,
-          re_data_prevista: exemplar.requisicao?.[0]?.re_data_prevista,
-          ut_nome: exemplar.requisicao?.[0]?.utente?.ut_nome
-        })) || [];
+        const exemplaresProcessados = (exemplaresData as any[])?.map((exemplar: any) => {
+          const req = Array.isArray(exemplar.requisicao) ? exemplar.requisicao[0] : exemplar.requisicao;
+          const utenteField = req?.utente;
+          const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome;
+          return {
+            lex_cod: exemplar.lex_cod,
+            lex_estado: exemplar.lex_estado,
+            lex_disponivel: exemplar.lex_disponivel,
+            re_data_requisicao: req?.re_data_requisicao,
+            re_data_prevista: req?.re_data_prevista,
+            ut_nome: utenteNome,
+          } as Exemplar;
+        }) || [];
         setExemplares(exemplaresProcessados);
       }
 
@@ -398,7 +403,7 @@ export default function LivroDetalhesPage() {
                             {!exemplar.lex_disponivel && exemplar.ut_nome ? (
                               <>
                                 <strong>Emprestado para:</strong> {exemplar.ut_nome}<br />
-                                <strong>Data do empréstimo:</strong> {formatDate(exemplar.re_data_requisicao)}<br />
+                                <strong>Data do empréstimo:</strong> {formatDate(exemplar.re_data_requisicao ?? null)}<br />
                                 <strong>Data prevista de devolução:</strong>{' '}
                                 {exemplar.re_data_prevista && (
                                   <>
@@ -408,7 +413,7 @@ export default function LivroDetalhesPage() {
                                       const isOverdue = hoje > vencimento;
                                       return (
                                         <span className={isOverdue ? 'text-danger' : ''}>
-                                          {formatDate(exemplar.re_data_prevista)}
+                                          {formatDate(exemplar.re_data_prevista ?? null)}
                                           {isOverdue && ' (Em atraso)'}
                                         </span>
                                       );
