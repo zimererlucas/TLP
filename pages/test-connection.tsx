@@ -18,7 +18,7 @@ export default function TestConnectionPage() {
         setStatus(`✅ Conexão funcionando! Encontrados ${result.data?.length || 0} utentes`);
         
         if (result.data && result.data.length > 0) {
-          setStatus(prev => prev + `\n\nUtentes encontrados:\n${result.data.map(u => `- ${u.ut_nome} (${u.ut_email || 'sem email'})`).join('\n')}`);
+          setStatus(prev => prev + `\n\nUtentes encontrados:\n${result.data.map((u: any) => `- ${u.ut_nome} (${u.ut_email || 'sem email'})`).join('\n')}`);
         } else {
           setStatus(prev => prev + '\n\nNenhum utente encontrado. Vamos adicionar um...');
           await addTestUtente();
