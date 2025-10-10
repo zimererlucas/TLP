@@ -100,10 +100,14 @@ async function handleGet(req, res) {
     // Ordenar por código do exemplar
     query = query.order('lex_cod', { ascending: true })
 
-    // Aplicar paginação
-    const from = (page - 1) * limit
-    const to = from + limit - 1
-    query = query.range(from, to)
+    // Aplicar paginação somente quando apropriado
+    const pageNum = parseInt(page, 10) || 1
+    const limitNum = limit === 'all' ? null : (parseInt(limit, 10) || 10)
+    if (limitNum !== null) {
+      const from = (pageNum - 1) * limitNum
+      const to = from + limitNum - 1
+      query = query.range(from, to)
+    }
 
     const { data: exemplares, error } = await query
 

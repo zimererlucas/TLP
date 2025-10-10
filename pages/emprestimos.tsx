@@ -54,7 +54,7 @@ export default function EmprestimosPage() {
 
   const fetchExemplaresDisponiveis = async () => {
     try {
-      const response = await fetch('/api/exemplares?disponivel=true&limit=1000');
+      const response = await fetch('/api/exemplares?disponivel=true&limit=all');
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || 'Falha ao carregar exemplares');
