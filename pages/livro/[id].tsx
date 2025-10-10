@@ -100,10 +100,11 @@ export default function LivroDetalhesPage() {
               .select(`
                 re_data_requisicao,
                 re_data_prevista,
+                re_data_devolucao,
                 utente:utente(ut_nome)
               `)
               .eq('re_lex_cod', exemplar.lex_cod)
-              .is('re_data_devolucao', null)
+              .or('re_data_devolucao.is.null,re_data_devolucao.eq.')
               .limit(1);
 
             const requisicaoAtiva = Array.isArray(requisicoesAtivas) && requisicoesAtivas.length > 0 ? requisicoesAtivas[0] : undefined;
