@@ -112,8 +112,46 @@ async function handleGet(req, res) {
     const { data: exemplares, error } = await query
 
     if (error) throw error
+    
+    // Enriquecer com status de empréstimo ativo (servidor)
+    const exemplarIds = (exemplares || []).map(e => e.lex_cod)
+    let exemplaresComStatus = exemplares
+    if (exemplarIds.length > 0) {
+      const { data: requisicoesAtivas } = await supabaseAdmin
+        .from('requisicao')
+        .select(`
+          re_lex_cod,
+          re_data_requisicao,
+          re_data_prevista,
+          re_data_devolucao,
+          utente:utente(ut_nome)
+        `)
+        .in('re_lex_cod', exemplarIds)
+        .or('re_data_devolucao.is.null,re_data_devolucao.eq.')
 
-    return res.status(200).json({ data: exemplares })
+      const ativoPorExemplar = new Map()
+      ;(requisicoesAtivas || []).forEach((req) => {
+        if (!ativoPorExemplar.has(req.re_lex_cod)) {
+          ativoPorExemplar.set(req.re_lex_cod, req)
+        }
+      })
+
+      exemplaresComStatus = exemplares.map((ex) => {
+        const ativo = ativoPorExemplar.get(ex.lex_cod)
+        const utenteField = ativo?.utente
+        const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome
+        return {
+          ...ex,
+          // Considerar indisponível se houver empréstimo ativo, independentemente do flag salvo
+          lex_disponivel: ex.lex_disponivel && !ativo,
+          re_data_requisicao: ativo?.re_data_requisicao || null,
+          re_data_prevista: ativo?.re_data_prevista || null,
+          ut_nome: utenteNome || null,
+        }
+      })
+    }
+
+    return res.status(200).json({ data: exemplaresComStatus })
   } catch (error) {
     console.error('Erro ao buscar exemplares:', error)
     return res.status(500).json({ error: error.message })

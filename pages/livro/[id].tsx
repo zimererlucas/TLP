@@ -80,51 +80,20 @@ export default function LivroDetalhesPage() {
 
       setLivro(livroData);
 
-      // Buscar exemplares do livro
-      const { data: exemplaresData, error: exemplaresError } = await supabase
-        .from('livro_exemplar')
-        .select('lex_cod, lex_estado, lex_disponivel')
-        .eq('lex_li_cod', livroId)
-        .order('lex_cod');
-
-      if (exemplaresError) {
-        console.error('Erro ao buscar exemplares:', exemplaresError);
-        setExemplares([]);
-      } else {
-        // Para cada exemplar, buscar a requisição ativa (se houver)
-        const exemplaresComRequisicoes = await Promise.all(
-          (exemplaresData || []).map(async (exemplar) => {
-            // Buscar requisição ativa para este exemplar
-            const { data: requisicoesAtivas } = await supabase
-              .from('requisicao')
-              .select(`
-                re_data_requisicao,
-                re_data_prevista,
-                re_data_devolucao,
-                utente:utente(ut_nome)
-              `)
-              .eq('re_lex_cod', exemplar.lex_cod)
-              .or('re_data_devolucao.is.null,re_data_devolucao.eq.')
-              .limit(1);
-
-            const requisicaoAtiva = Array.isArray(requisicoesAtivas) && requisicoesAtivas.length > 0 ? requisicoesAtivas[0] : undefined;
-            const utenteField = requisicaoAtiva?.utente as any;
-            const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome;
-            const hasActiveLoan = Boolean(requisicaoAtiva);
-
-            return {
-              lex_cod: exemplar.lex_cod,
-              lex_estado: exemplar.lex_estado,
-              // Considerar indisponível se houver empréstimo ativo, independentemente do flag salvo
-              lex_disponivel: exemplar.lex_disponivel && !hasActiveLoan,
-              re_data_requisicao: requisicaoAtiva?.re_data_requisicao,
-              re_data_prevista: requisicaoAtiva?.re_data_prevista,
-              ut_nome: utenteNome,
-            } as Exemplar;
-          })
-        );
-        setExemplares(exemplaresComRequisicoes);
-      }
+      // Buscar exemplares via API (já traz status de empréstimo ativo)
+      const respEx = await fetch(`/api/exemplares?livro=${encodeURIComponent(livroId)}&limit=all`);
+      if (!respEx.ok) throw new Error('Erro ao buscar exemplares');
+      const jsonEx = await respEx.json();
+      const exemplaresData = (jsonEx?.data || []) as any[];
+      const adaptados: Exemplar[] = exemplaresData.map((ex: any) => ({
+        lex_cod: ex.lex_cod,
+        lex_estado: ex.lex_estado,
+        lex_disponivel: Boolean(ex.lex_disponivel),
+        re_data_requisicao: ex.re_data_requisicao || undefined,
+        re_data_prevista: ex.re_data_prevista || undefined,
+        ut_nome: ex.ut_nome || undefined,
+      }));
+      setExemplares(adaptados);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar livro');
