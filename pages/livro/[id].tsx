@@ -95,7 +95,7 @@ export default function LivroDetalhesPage() {
         const exemplaresComRequisicoes = await Promise.all(
           (exemplaresData || []).map(async (exemplar) => {
             // Buscar requisição ativa para este exemplar
-            const { data: requisicaoAtiva } = await supabase
+            const { data: requisicoesAtivas } = await supabase
               .from('requisicao')
               .select(`
                 re_data_requisicao,
@@ -104,8 +104,9 @@ export default function LivroDetalhesPage() {
               `)
               .eq('re_lex_cod', exemplar.lex_cod)
               .is('re_data_devolucao', null)
-              .single();
+              .limit(1);
 
+            const requisicaoAtiva = Array.isArray(requisicoesAtivas) && requisicoesAtivas.length > 0 ? requisicoesAtivas[0] : undefined;
             const utenteField = requisicaoAtiva?.utente as any;
             const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome;
             const hasActiveLoan = Boolean(requisicaoAtiva);
