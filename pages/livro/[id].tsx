@@ -108,11 +108,13 @@ export default function LivroDetalhesPage() {
 
             const utenteField = requisicaoAtiva?.utente as any;
             const utenteNome = Array.isArray(utenteField) ? utenteField[0]?.ut_nome : utenteField?.ut_nome;
+            const hasActiveLoan = Boolean(requisicaoAtiva);
 
             return {
               lex_cod: exemplar.lex_cod,
               lex_estado: exemplar.lex_estado,
-              lex_disponivel: exemplar.lex_disponivel,
+              // Considerar indisponível se houver empréstimo ativo, independentemente do flag salvo
+              lex_disponivel: exemplar.lex_disponivel && !hasActiveLoan,
               re_data_requisicao: requisicaoAtiva?.re_data_requisicao,
               re_data_prevista: requisicaoAtiva?.re_data_prevista,
               ut_nome: utenteNome,
