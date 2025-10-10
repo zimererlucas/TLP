@@ -74,21 +74,19 @@ export default function EmprestimosPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('requisicao')
-        .insert({
+      const response = await fetch('/api/requisicoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           re_ut_cod: selectedUtente,
           re_lex_cod: selectedExemplar,
           re_data_requisicao: new Date().toISOString().split('T')[0]
-        });
-
-      if (error) throw error;
-
-      // Atualizar exemplar como indisponível
-      await supabase
-        .from('livro_exemplar')
-        .update({ lex_disponivel: false })
-        .eq('lex_cod', selectedExemplar);
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao criar empréstimo');
+      }
 
       setMessage({ type: 'success', text: 'Empréstimo registrado com sucesso!' });
       setSelectedUtente(null);
