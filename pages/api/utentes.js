@@ -3,7 +3,7 @@
  * Gerencia usuários da biblioteca
  */
 
-import { supabaseAdmin, isValidEmail } from '../../lib/supabaseClient'
+import { supabaseAdmin, isValidEmail } from '../../lib/supabase'
 
 export default async function handler(req, res) {
   // Configurar CORS para permitir requisições do frontend

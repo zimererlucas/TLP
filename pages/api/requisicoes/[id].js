@@ -3,7 +3,7 @@
  * Suporta PUT e DELETE em /api/requisicoes/:id
  */
 
-import { supabaseAdmin } from '../../../lib/supabaseClient'
+import { supabaseAdmin } from '../../../lib/supabase'
 
 export default async function handler(req, res) {
   // Configurar CORS

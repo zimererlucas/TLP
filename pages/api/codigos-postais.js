@@ -3,7 +3,7 @@
  * Gerencia códigos postais da biblioteca
  */
 
-import { supabaseAdmin } from '../../lib/supabaseClient';
+import { supabaseAdmin } from '../../lib/supabase';
 
 export default async function handler(req, res) {
   // Configurar CORS

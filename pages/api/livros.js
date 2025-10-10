@@ -3,7 +3,7 @@
  * Substitui as funcionalidades de livros do PHP original
  */
 
-import { supabaseAdmin } from '../../lib/supabaseClient'
+import { supabaseAdmin } from '../../lib/supabase'
 
 export default async function handler(req, res) {
   // Configurar CORS para permitir requisições do frontend
