@@ -379,27 +379,31 @@ export default function LivroDetalhesPage() {
                             )}
                           </td>
                           <td>
-                            {!exemplar.lex_disponivel && exemplar.ut_nome ? (
-                              <>
-                                <strong>Emprestado para:</strong> {exemplar.ut_nome}<br />
-                                <strong>Data do empréstimo:</strong> {formatDate(exemplar.re_data_requisicao ?? null)}<br />
-                                <strong>Data prevista de devolução:</strong>{' '}
-                                {exemplar.re_data_prevista && (
-                                  <>
-                                    {(() => {
-                                      const hoje = new Date();
-                                      const vencimento = new Date(exemplar.re_data_prevista!);
-                                      const isOverdue = hoje > vencimento;
-                                      return (
-                                        <span className={isOverdue ? 'text-danger' : ''}>
-                                          {formatDate(exemplar.re_data_prevista ?? null)}
-                                          {isOverdue && ' (Em atraso)'}
-                                        </span>
-                                      );
-                                    })()}
-                                  </>
-                                )}
-                              </>
+                            {!exemplar.lex_disponivel ? (
+                              exemplar.ut_nome ? (
+                                <>
+                                  <strong>Emprestado para:</strong> {exemplar.ut_nome}<br />
+                                  <strong>Data do empréstimo:</strong> {formatDate(exemplar.re_data_requisicao ?? null)}<br />
+                                  <strong>Data prevista de devolução:</strong>{' '}
+                                  {exemplar.re_data_prevista && (
+                                    <>
+                                      {(() => {
+                                        const hoje = new Date();
+                                        const vencimento = new Date(exemplar.re_data_prevista!);
+                                        const isOverdue = hoje > vencimento;
+                                        return (
+                                          <span className={isOverdue ? 'text-danger' : ''}>
+                                            {formatDate(exemplar.re_data_prevista ?? null)}
+                                            {isOverdue && ' (Em atraso)'}
+                                          </span>
+                                        );
+                                      })()}
+                                    </>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-muted">Emprestado (dados indisponíveis)</span>
+                              )
                             ) : (
                               <span className="text-muted">Disponível para empréstimo</span>
                             )}
