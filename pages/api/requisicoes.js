@@ -144,22 +144,7 @@ async function handlePost(req, res) {
       return res.status(400).json({ error: 'Utente e exemplar são obrigatórios' })
     }
 
-    // Impedir mais de um empréstimo ativo por utente
-    const { data: emprestimoAtivo, error: emprestimoAtivoError } = await supabaseAdmin
-      .from('requisicao')
-      .select('re_cod')
-      .eq('re_ut_cod', re_ut_cod)
-      .is('re_data_devolucao', null)
-      .limit(1)
-
-    if (emprestimoAtivoError) {
-      console.error('Erro ao verificar empréstimos ativos:', emprestimoAtivoError)
-      return res.status(500).json({ error: 'Erro ao verificar empréstimos ativos' })
-    }
-
-    if (emprestimoAtivo && emprestimoAtivo.length > 0) {
-      return res.status(400).json({ error: 'Utente já possui um empréstimo ativo' })
-    }
+    // Permitido múltiplos empréstimos por utente: removida verificação de ativo único
 
     // Verificar se o exemplar está disponível
     const { data: exemplar, error: exemplarError } = await supabaseAdmin

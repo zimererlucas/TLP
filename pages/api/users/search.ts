@@ -23,8 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Buscar utentes que correspondem ao termo de busca
     const { data: utentes, error } = await supabaseAdmin
       .from('utente')
-      .select('ut_cod, ut_nome, ut_email, ut_tlm')
-      .or(`ut_nome.ilike.%${searchTerm}%,ut_email.ilike.%${searchTerm}%`)
+      .select('ut_cod, ut_nome, ut_email, ut_tlm, ut_nif')
+      .or(`ut_nome.ilike.%${searchTerm}%,ut_email.ilike.%${searchTerm}%,ut_nif.ilike.%${searchTerm}%`)
       .order('ut_nome')
       .limit(10);
 

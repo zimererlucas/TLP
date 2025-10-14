@@ -29,6 +29,9 @@ export default function EmprestimosPage() {
   const [exemplares, setExemplares] = useState<Exemplar[]>([]);
   const [selectedUtente, setSelectedUtente] = useState<number | null>(null);
   const [selectedExemplar, setSelectedExemplar] = useState<number | null>(null);
+  const [utenteQuery, setUtenteQuery] = useState('');
+  const [utenteResults, setUtenteResults] = useState<Utente[]>([]);
+  const [cart, setCart] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -66,31 +69,61 @@ export default function EmprestimosPage() {
     }
   };
 
+  const searchUtentes = async (q: string) => {
+    if (!q || q.trim().length < 2) {
+      setUtenteResults([]);
+      return;
+    }
+    try {
+      const resp = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`);
+      const data = await resp.json();
+      setUtenteResults(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setUtenteResults([]);
+    }
+  };
+
+  const addToCart = (lexCod: number) => {
+    if (!cart.includes(lexCod)) {
+      setCart([...cart, lexCod]);
+    }
+  };
+
+  const removeFromCart = (lexCod: number) => {
+    setCart(cart.filter(id => id !== lexCod));
+  };
+
+  const clearCart = () => setCart([]);
+
   const handleEmprestimo = async () => {
-    if (!selectedUtente || !selectedExemplar) {
-      setMessage({ type: 'error', text: 'Selecione um usuário e um exemplar' });
+    if (!selectedUtente || cart.length === 0) {
+      setMessage({ type: 'error', text: 'Selecione um usuário e adicione exemplares ao carrinho' });
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch('/api/requisicoes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          re_ut_cod: selectedUtente,
-          re_lex_cod: selectedExemplar,
-          re_data_requisicao: new Date().toISOString().split('T')[0]
-        })
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao criar empréstimo');
+      // Criar empréstimos em série para cada exemplar do carrinho
+      for (const lexCod of cart) {
+        const response = await fetch('/api/requisicoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            re_ut_cod: selectedUtente,
+            re_lex_cod: lexCod,
+            re_data_requisicao: new Date().toISOString().split('T')[0]
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Erro ao criar empréstimo');
+        }
       }
 
-      setMessage({ type: 'success', text: 'Empréstimo registrado com sucesso!' });
+      setMessage({ type: 'success', text: 'Empréstimos registrados com sucesso!' });
       setSelectedUtente(null);
       setSelectedExemplar(null);
+      clearCart();
       fetchExemplaresDisponiveis();
     } catch (error) {
       console.error('Erro ao registrar empréstimo:', error);
@@ -118,33 +151,49 @@ export default function EmprestimosPage() {
 
       <div className="row mt-4">
         <div className="col-md-6">
-          <div className="card">
+            <div className="card">
             <div className="card-header">
               <h5>Selecionar Usuário</h5>
             </div>
             <div className="card-body">
               <div className="mb-3">
-                <label htmlFor="utente" className="form-label">Usuário:</label>
-                <select
-                  id="utente"
-                  className="form-select"
-                  value={selectedUtente || ''}
-                  onChange={(e) => setSelectedUtente(Number(e.target.value) || null)}
-                >
-                  <option value="">Selecione um usuário</option>
-                  {utentes.map((utente) => (
-                    <option key={utente.ut_cod} value={utente.ut_cod}>
-                      {utente.ut_nome} {utente.ut_email && `(${utente.ut_email})`}
-                    </option>
-                  ))}
-                </select>
+                <label htmlFor="utenteSearch" className="form-label">Buscar por NIF ou Email:</label>
+                <input
+                  id="utenteSearch"
+                  className="form-control"
+                  placeholder="Digite NIF, email ou nome"
+                  value={utenteQuery}
+                  onChange={(e) => {
+                    const q = e.target.value;
+                    setUtenteQuery(q);
+                    searchUtentes(q);
+                  }}
+                />
+                {utenteResults.length > 0 && (
+                  <div className="list-group mt-2">
+                    {utenteResults.map((u) => (
+                      <button
+                        key={u.ut_cod}
+                        type="button"
+                        className={`list-group-item list-group-item-action ${selectedUtente === u.ut_cod ? 'active' : ''}`}
+                        onClick={() => {
+                          setSelectedUtente(u.ut_cod);
+                          setUtenteQuery(`${u.ut_nome}${u.ut_email ? ' (' + u.ut_email + ')' : ''}`);
+                          setUtenteResults([]);
+                        }}
+                      >
+                        {u.ut_nome} {u.ut_email ? `(${u.ut_email})` : ''}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         <div className="col-md-6">
-          <div className="card">
+            <div className="card">
             <div className="card-header">
               <h5>Selecionar Exemplar</h5>
             </div>
@@ -165,6 +214,13 @@ export default function EmprestimosPage() {
                   ))}
                 </select>
               </div>
+              <button
+                className="btn btn-outline-primary"
+                disabled={!selectedExemplar}
+                onClick={() => selectedExemplar && addToCart(selectedExemplar)}
+              >
+                Adicionar ao carrinho
+              </button>
             </div>
           </div>
         </div>
@@ -176,10 +232,35 @@ export default function EmprestimosPage() {
             <button
               className="btn btn-success btn-lg"
               onClick={handleEmprestimo}
-              disabled={loading || !selectedUtente || !selectedExemplar}
+              disabled={loading || !selectedUtente || cart.length === 0}
             >
-              {loading ? 'Registrando...' : 'Registrar Empréstimo'}
+              {loading ? 'Registrando...' : 'Finalizar Empréstimos'}
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Carrinho */}
+      <div className="row mt-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header">
+              <h5>Lista de Empréstimos (Carrinho)</h5>
+            </div>
+            <div className="card-body">
+              {cart.length === 0 ? (
+                <div className="text-muted">Nenhum exemplar no carrinho.</div>
+              ) : (
+                <ul className="list-group">
+                  {cart.map((lex) => (
+                    <li key={lex} className="list-group-item d-flex justify-content-between align-items-center">
+                      Exemplar #{lex}
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => removeFromCart(lex)}>Remover</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       </div>
