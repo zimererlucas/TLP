@@ -11,6 +11,7 @@ interface Utente {
   ut_cod: number;
   ut_nome: string;
   ut_email?: string;
+  ut_nif?: string;
 }
 
 interface Exemplar {
