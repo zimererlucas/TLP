@@ -178,11 +178,11 @@ export default function EmprestimosPage() {
                         className={`list-group-item list-group-item-action ${selectedUtente === u.ut_cod ? 'active' : ''}`}
                         onClick={() => {
                           setSelectedUtente(u.ut_cod);
-                          setUtenteQuery(`${u.ut_nome}${u.ut_email ? ' (' + u.ut_email + ')' : ''}`);
+                          setUtenteQuery(`${u.ut_nome}${u.ut_email ? ' (' + u.ut_email + ')' : ''}${u.ut_nif ? ' - NIF: ' + u.ut_nif : ''}`);
                           setUtenteResults([]);
                         }}
                       >
-                        {u.ut_nome} {u.ut_email ? `(${u.ut_email})` : ''}
+                        {u.ut_nome} {u.ut_email ? `(${u.ut_email})` : ''} {u.ut_nif ? `- NIF: ${u.ut_nif}` : ''}
                       </button>
                     ))}
                   </div>
