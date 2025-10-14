@@ -20,22 +20,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const searchTerm = q.trim();
 
-    // Montar filtros dinamicamente para suportar NIF numérico (eq) e texto (ilike)
-    const onlyDigits = searchTerm.replace(/\D/g, '');
-    const nifFilter = onlyDigits.length > 0 && onlyDigits.length === searchTerm.length
-      ? `ut_nif.eq.${onlyDigits}`
-      : `ut_nif.ilike.%${searchTerm}%`;
-
-    const orFilters = [
-      `ut_nome.ilike.%${searchTerm}%`,
-      `ut_email.ilike.%${searchTerm}%`,
-      nifFilter,
-    ].join(',');
-
+    // Buscar utentes que correspondem ao termo de busca (NIF, nome ou email)
     const { data: utentes, error } = await supabaseAdmin
       .from('utente')
       .select('ut_cod, ut_nome, ut_email, ut_tlm, ut_nif')
-      .or(orFilters)
+      .or(`ut_nome.ilike.%${searchTerm}%,ut_email.ilike.%${searchTerm}%,ut_nif.ilike.%${searchTerm}%`)
       .order('ut_nome')
       .limit(10);
 
