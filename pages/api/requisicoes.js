@@ -54,7 +54,8 @@ async function handleGet(req, res) {
           utente:utente (
             ut_cod,
             ut_nome,
-            ut_email
+            ut_email,
+            ut_nif
           ),
           exemplar:livro_exemplar (
             lex_cod,
@@ -91,7 +92,8 @@ async function handleGet(req, res) {
         utente:utente (
           ut_cod,
           ut_nome,
-          ut_email
+          ut_email,
+          ut_nif
         ),
         exemplar:livro_exemplar (
           lex_cod,
