@@ -5,8 +5,10 @@ interface Emprestimo {
   re_cod: number;
   re_data_requisicao: string;
   utente: {
+    ut_cod: number;
     ut_nome: string;
     ut_email?: string;
+    ut_nif?: string;
   };
   exemplar: {
     lex_cod: number;
@@ -21,7 +23,9 @@ interface Emprestimo {
 
 export default function DevolucoesPage() {
   const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
+  const [filteredEmprestimos, setFilteredEmprestimos] = useState<Emprestimo[]>([]);
   const [selectedEmprestimos, setSelectedEmprestimos] = useState<number[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loadingFetch, setLoadingFetch] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -34,6 +38,7 @@ export default function DevolucoesPage() {
 
       if (response.ok) {
         setEmprestimos(result.data || []);
+        setFilteredEmprestimos(result.data || []);
       } else {
         setMessage({ type: 'error', text: 'Erro ao carregar empréstimos' });
       }
@@ -48,6 +53,19 @@ export default function DevolucoesPage() {
   useEffect(() => {
     fetchEmprestimosAtivos();
   }, [fetchEmprestimosAtivos]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredEmprestimos(emprestimos);
+    } else {
+      const filtered = emprestimos.filter(emprestimo =>
+        emprestimo.utente.ut_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (emprestimo.utente.ut_email && emprestimo.utente.ut_email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (emprestimo.utente.ut_nif && emprestimo.utente.ut_nif.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredEmprestimos(filtered);
+    }
+  }, [searchTerm, emprestimos]);
 
   const handleDevolucao = async () => {
     if (selectedEmprestimos.length === 0) {
@@ -116,7 +134,26 @@ export default function DevolucoesPage() {
         <div className="col-12">
           <div className="card">
             <div className="card-header">
-              <h5>Empréstimos Ativos</h5>
+              <div className="d-flex justify-content-between align-items-center">
+                <h5>Empréstimos Ativos</h5>
+                <div className="input-group" style={{ maxWidth: '300px' }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Buscar por nome, email ou NIF..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <button
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    disabled={!searchTerm}
+                  >
+                    <i className="bi bi-x"></i>
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="card-body">
               {loadingFetch ? (
@@ -125,8 +162,10 @@ export default function DevolucoesPage() {
                     <span className="visually-hidden">Carregando...</span>
                   </div>
                 </div>
-              ) : emprestimos.length === 0 ? (
-                <p className="text-muted">Nenhum empréstimo ativo encontrado.</p>
+              ) : filteredEmprestimos.length === 0 ? (
+                <p className="text-muted">
+                  {emprestimos.length === 0 ? 'Nenhum empréstimo ativo encontrado.' : 'Nenhum empréstimo encontrado para a busca.'}
+                </p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-hover">
@@ -134,7 +173,7 @@ export default function DevolucoesPage() {
                       <tr>
                         <th>Selecionar Todos<br /><input type="checkbox" onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedEmprestimos(emprestimos.map(emp => emp.re_cod));
+                            setSelectedEmprestimos(filteredEmprestimos.map(emp => emp.re_cod));
                           } else {
                             setSelectedEmprestimos([]);
                           }
@@ -146,7 +185,7 @@ export default function DevolucoesPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {emprestimos.map(({ re_cod, utente, exemplar, re_data_requisicao }) => (
+                      {filteredEmprestimos.map(({ re_cod, utente, exemplar, re_data_requisicao }) => (
                         <tr key={re_cod}>
                           <td>
                             <div className="form-check">
@@ -172,6 +211,12 @@ export default function DevolucoesPage() {
                           </td>
                           <td>
                             <strong>{utente.ut_nome}</strong>
+                            {utente.ut_nif && (
+                              <>
+                                <br />
+                                <small className="text-muted">NIF: {utente.ut_nif}</small>
+                              </>
+                            )}
                             {utente.ut_email && (
                               <>
                                 <br />
