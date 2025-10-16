@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
+import { supabase } from '../lib/supabase';
 
 interface Emprestimo {
   re_cod: number;
@@ -21,10 +22,30 @@ interface Emprestimo {
   };
 }
 
+interface Reserva {
+  res_cod: number;
+  res_data: string;
+  utente: {
+    ut_cod: number;
+    ut_nome: string;
+    ut_email?: string;
+  };
+  exemplar: {
+    lex_cod: number;
+    livro: {
+      li_titulo: string;
+      autor: {
+        au_nome: string;
+      };
+    };
+  };
+}
+
 export default function DevolucoesPage() {
   const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
   const [filteredEmprestimos, setFilteredEmprestimos] = useState<Emprestimo[]>([]);
   const [selectedEmprestimos, setSelectedEmprestimos] = useState<number[]>([]);
+  const [reservas, setReservas] = useState<Reserva[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingFetch, setLoadingFetch] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -50,9 +71,64 @@ export default function DevolucoesPage() {
     }
   }, []);
 
+  const fetchReservasPendentes = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reserva')
+        .select(`
+          res_cod,
+          res_data,
+          utente!ut_cod (
+            ut_cod,
+            ut_nome,
+            ut_email
+          ),
+          exemplar!lex_cod (
+            lex_cod,
+            livro!li_cod (
+              li_titulo,
+              autor!au_cod (
+                au_nome
+              )
+            )
+          )
+        `)
+        .eq('res_status', 'pendente');
+
+      if (error) {
+        console.error('Erro ao buscar reservas pendentes:', error);
+      } else {
+        setReservas((data || []) as unknown as Reserva[]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar reservas pendentes:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchEmprestimosAtivos();
-  }, [fetchEmprestimosAtivos]);
+    fetchReservasPendentes();
+
+    // Escuta novas reservas
+    const channel = supabase
+      .channel('reservas')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'reserva'
+      }, (payload) => {
+        console.log('Nova reserva:', payload.new);
+        // Atualizar reservas pendentes
+        fetchReservasPendentes();
+        // Mostrar notificação de sucesso
+        setMessage({ type: 'success', text: 'Nova reserva registrada! Verifique as reservas pendentes.' });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchEmprestimosAtivos, fetchReservasPendentes]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -119,6 +195,17 @@ export default function DevolucoesPage() {
           <p className="page-subtitle">Selecione os empréstimos para registrar as devoluções</p>
         </div>
       </div>
+
+      {reservas.length > 0 && (
+        <div className="row">
+          <div className="col-12">
+            <div className="alert alert-info alert-dismissible fade show" role="alert">
+              <strong>Reservas Pendentes:</strong> Há {reservas.length} reserva(s) aguardando aprovação.
+              <button type="button" className="btn-close" onClick={() => setReservas([])}></button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {message && (
         <div
