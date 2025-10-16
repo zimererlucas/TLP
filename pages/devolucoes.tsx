@@ -98,6 +98,7 @@ export default function DevolucoesPage() {
       if (error) {
         console.error('Erro ao buscar reservas pendentes:', error);
       } else {
+        console.log('Fetched reservas:', data);
         setReservas((data || []) as unknown as Reserva[]);
       }
     } catch (error) {
