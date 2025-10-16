@@ -73,6 +73,7 @@ export default function DevolucoesPage() {
 
   const fetchReservasPendentes = useCallback(async () => {
     try {
+      console.log('Buscando reservas pendentes...');
       const { data, error } = await supabase
         .from('reserva')
         .select(`
@@ -99,6 +100,7 @@ export default function DevolucoesPage() {
         console.error('Erro ao buscar reservas pendentes:', error);
       } else {
         console.log('Fetched reservas:', data);
+        console.log('Número de reservas encontradas:', data?.length || 0);
         setReservas((data || []) as unknown as Reserva[]);
       }
     } catch (error) {
