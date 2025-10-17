@@ -199,6 +199,46 @@ export default function DevolucoesPage() {
     }
   };
 
+  const handleAprovarReserva = async (reservaId: number) => {
+    try {
+      const { error } = await supabase
+        .from('reserva')
+        .update({ res_status: 'aprovada' })
+        .eq('res_cod', reservaId);
+
+      if (error) {
+        console.error('Erro ao aprovar reserva:', error);
+        setMessage({ type: 'error', text: 'Erro ao aprovar reserva' });
+      } else {
+        setMessage({ type: 'success', text: 'Reserva aprovada com sucesso!' });
+        fetchReservasPendentes();
+      }
+    } catch (error) {
+      console.error('Erro ao aprovar reserva:', error);
+      setMessage({ type: 'error', text: 'Erro ao aprovar reserva' });
+    }
+  };
+
+  const handleRejeitarReserva = async (reservaId: number) => {
+    try {
+      const { error } = await supabase
+        .from('reserva')
+        .update({ res_status: 'rejeitada' })
+        .eq('res_cod', reservaId);
+
+      if (error) {
+        console.error('Erro ao rejeitar reserva:', error);
+        setMessage({ type: 'error', text: 'Erro ao rejeitar reserva' });
+      } else {
+        setMessage({ type: 'success', text: 'Reserva rejeitada com sucesso!' });
+        fetchReservasPendentes();
+      }
+    } catch (error) {
+      console.error('Erro ao rejeitar reserva:', error);
+      setMessage({ type: 'error', text: 'Erro ao rejeitar reserva' });
+    }
+  };
+
   const formatDate = useCallback((date: string): string => {
     try {
       return new Date(date).toLocaleDateString('pt-BR');
@@ -219,9 +259,48 @@ export default function DevolucoesPage() {
       {reservas.length > 0 && (
         <div className="row">
           <div className="col-12">
-            <div className="alert alert-info alert-dismissible fade show" role="alert">
-              <strong>Reservas Pendentes:</strong> Há {reservas.length} reserva(s) aguardando aprovação.
-              <button type="button" className="btn-close" onClick={() => setReservas([])}></button>
+            <div className="card">
+              <div className="card-header">
+                <h5>📋 Reservas Pendentes</h5>
+              </div>
+              <div className="card-body">
+                <p>Há {reservas.length} reserva(s) aguardando aprovação:</p>
+                <div className="table-responsive">
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Utente</th>
+                        <th>Livro</th>
+                        <th>Data da Reserva</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reservas.map((reserva) => (
+                        <tr key={reserva.res_cod}>
+                          <td><strong>{reserva.utente.ut_nome}</strong></td>
+                          <td>{reserva.exemplar.livro.li_titulo}</td>
+                          <td>{formatDate(reserva.res_data)}</td>
+                          <td>
+                            <button
+                              className="btn btn-success btn-sm me-2"
+                              onClick={() => handleAprovarReserva(reserva.res_cod)}
+                            >
+                              <i className="fas fa-check"></i> Aprovar
+                            </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleRejeitarReserva(reserva.res_cod)}
+                            >
+                              <i className="fas fa-times"></i> Rejeitar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>

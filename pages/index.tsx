@@ -14,12 +14,21 @@ interface EmprestimoAtraso {
   re_data_prevista: string;
 }
 
+interface ReservaPendente {
+  res_cod: number;
+  li_titulo: string;
+  ut_nome: string;
+  res_data: string;
+}
+
 export default function HomePage() {
   const [emprestimosAtraso, setEmprestimosAtraso] = useState<EmprestimoAtraso[]>([]);
+  const [reservasPendentes, setReservasPendentes] = useState<ReservaPendente[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchEmprestimosAtraso();
+    fetchReservasPendentes();
   }, []);
 
   const fetchEmprestimosAtraso = async () => {
@@ -47,8 +56,51 @@ export default function HomePage() {
       setEmprestimosAtraso(emprestimos);
     } catch (error) {
       console.error('Erro ao buscar empréstimos em atraso:', error);
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const fetchReservasPendentes = async () => {
+    try {
+      const { data, error } = await import('../lib/supabase').then(({ supabase }) =>
+        supabase
+          .from('reserva')
+          .select(`
+            res_cod,
+            res_data,
+            utente!res_ut_cod (
+              ut_cod,
+              ut_nome
+            ),
+            livro!res_li_cod (
+              li_cod,
+              li_titulo,
+              autor!li_autor (
+                au_nome
+              )
+            )
+          `)
+          .eq('res_status', 'pendente')
+      );
+
+      if (error) {
+        console.error('Erro ao buscar reservas pendentes:', error);
+        return;
+      }
+
+      const reservas = (data || []).map((item: any) => {
+        const livro = Array.isArray(item.livro) ? item.livro[0] : item.livro;
+        const autor = Array.isArray(livro?.autor) ? livro.autor[0] : livro?.autor;
+        return {
+          res_cod: item.res_cod,
+          li_titulo: livro?.li_titulo || 'Livro',
+          ut_nome: item.utente?.ut_nome || 'Utente',
+          res_data: item.res_data,
+        };
+      });
+
+      setReservasPendentes(reservas);
+    } catch (error) {
+      console.error('Erro ao buscar reservas pendentes:', error);
     }
   };
 
@@ -160,24 +212,52 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      ) : emprestimosAtraso.length > 0 ? (
-        <div className="row mt-4">
-          <div className="col-12">
-            <div className="alert alert-danger" role="alert">
-              <h4 className="alert-heading">⚠️ Avisos Importantes</h4>
-              <p>Os seguintes empréstimos estão em atraso:</p>
-              <ul className="mb-0">
-                {emprestimosAtraso.map((emprestimo) => (
-                  <li key={emprestimo.re_cod}>
-                    <strong>{emprestimo.ut_nome}</strong> - "{emprestimo.li_titulo}" 
-                    (Vencimento: {formatDate(emprestimo.re_data_prevista)})
-                  </li>
-                ))}
-              </ul>
+      ) : (
+        <>
+          {reservasPendentes.length > 0 && (
+            <div className="row mt-4">
+              <div className="col-12">
+                <div className="alert alert-info" role="alert">
+                  <h4 className="alert-heading">📋 Reservas Pendentes</h4>
+                  <p>Há {reservasPendentes.length} reserva(s) aguardando aprovação:</p>
+                  <ul className="mb-0">
+                    {reservasPendentes.map((reserva) => (
+                      <li key={reserva.res_cod}>
+                        <strong>{reserva.ut_nome}</strong> - "{reserva.li_titulo}"
+                        (Data: {formatDate(reserva.res_data)})
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3">
+                    <Link href="/devolucoes" className="btn btn-primary btn-sm">
+                      Gerenciar Reservas
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+          )}
+
+          {emprestimosAtraso.length > 0 && (
+            <div className="row mt-4">
+              <div className="col-12">
+                <div className="alert alert-danger" role="alert">
+                  <h4 className="alert-heading">⚠️ Avisos Importantes</h4>
+                  <p>Os seguintes empréstimos estão em atraso:</p>
+                  <ul className="mb-0">
+                    {emprestimosAtraso.map((emprestimo) => (
+                      <li key={emprestimo.re_cod}>
+                        <strong>{emprestimo.ut_nome}</strong> - "{emprestimo.li_titulo}"
+                        (Vencimento: {formatDate(emprestimo.re_data_prevista)})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </Layout>
   );
 }
