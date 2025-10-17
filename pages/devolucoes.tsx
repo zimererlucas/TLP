@@ -74,46 +74,50 @@ export default function DevolucoesPage() {
   const fetchReservasPendentes = useCallback(async () => {
     try {
       console.log('Buscando reservas pendentes...');
-      // Como a tabela 'reserva' não existe no schema atual, vamos buscar da tabela 'requisicao'
-      // que é a tabela de empréstimos/requisições
       const { data, error } = await supabase
-        .from('requisicao')
+        .from('reserva')
         .select(`
-          re_cod,
-          re_data_requisicao,
-          utente!re_ut_cod (
+          res_cod,
+          res_data,
+          utente!res_ut_cod (
             ut_cod,
             ut_nome,
             ut_email
           ),
-          exemplar!re_lex_cod (
-            lex_cod,
-            livro!lex_li_cod (
-              li_titulo,
-              autor!li_autor (
-                au_nome
-              )
+          livro!res_li_cod (
+            li_cod,
+            li_titulo,
+            autor!li_autor (
+              au_nome
             )
           )
         `)
-        .is('re_data_devolucao', null); // Empréstimos ativos (sem devolução)
+        .eq('res_status', 'pendente');
 
       if (error) {
-        console.error('Erro ao buscar empréstimos ativos:', error);
+        console.error('Erro ao buscar reservas pendentes:', error);
       } else {
-        console.log('Fetched empréstimos ativos:', data);
-        console.log('Número de empréstimos ativos encontrados:', data?.length || 0);
+        console.log('Fetched reservas:', data);
+        console.log('Número de reservas encontradas:', data?.length || 0);
         // Transformar os dados para o formato esperado pela interface Reserva
         const reservasTransformadas = (data || []).map(item => ({
-          res_cod: item.re_cod,
-          res_data: item.re_data_requisicao,
+          res_cod: item.res_cod,
+          res_data: item.res_data,
           utente: item.utente,
-          exemplar: item.exemplar
+          exemplar: {
+            lex_cod: item.livro.li_cod, // Usar li_cod como lex_cod para compatibilidade
+            livro: {
+              li_titulo: item.livro.li_titulo,
+              autor: {
+                au_nome: item.livro.autor?.au_nome || 'Autor desconhecido'
+              }
+            }
+          }
         })) as unknown as Reserva[];
         setReservas(reservasTransformadas);
       }
     } catch (error) {
-      console.error('Erro ao buscar empréstimos ativos:', error);
+      console.error('Erro ao buscar reservas pendentes:', error);
     }
   }, []);
 
@@ -121,19 +125,19 @@ export default function DevolucoesPage() {
     fetchEmprestimosAtivos();
     fetchReservasPendentes();
 
-    // Escuta novas requisições (empréstimos)
+    // Escuta novas reservas
     const channel = supabase
-      .channel('requisicoes')
+      .channel('reservas')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'requisicao'
+        table: 'reserva'
       }, (payload) => {
-        console.log('Nova requisição:', payload.new);
-        // Atualizar empréstimos ativos
+        console.log('Nova reserva:', payload.new);
+        // Atualizar reservas pendentes
         fetchReservasPendentes();
         // Mostrar notificação de sucesso
-        setMessage({ type: 'success', text: 'Nova requisição registrada! Verifique os empréstimos ativos.' });
+        setMessage({ type: 'success', text: 'Nova reserva registrada! Verifique as reservas pendentes.' });
       })
       .subscribe();
 
