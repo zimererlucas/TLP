@@ -100,20 +100,24 @@ export default function DevolucoesPage() {
         console.log('Fetched reservas:', data);
         console.log('Número de reservas encontradas:', data?.length || 0);
         // Transformar os dados para o formato esperado pela interface Reserva
-        const reservasTransformadas = (data || []).map(item => ({
-          res_cod: item.res_cod,
-          res_data: item.res_data,
-          utente: item.utente,
-          exemplar: {
-            lex_cod: item.livro.li_cod, // Usar li_cod como lex_cod para compatibilidade
-            livro: {
-              li_titulo: item.livro.li_titulo,
-              autor: {
-                au_nome: item.livro.autor?.au_nome || 'Autor desconhecido'
+        const reservasTransformadas = (data || []).map(item => {
+          const livro = Array.isArray(item.livro) ? item.livro[0] : item.livro;
+          const autor = Array.isArray(livro.autor) ? livro.autor[0] : livro.autor;
+          return {
+            res_cod: item.res_cod,
+            res_data: item.res_data,
+            utente: item.utente,
+            exemplar: {
+              lex_cod: livro.li_cod, // Usar li_cod como lex_cod para compatibilidade
+              livro: {
+                li_titulo: livro.li_titulo,
+                autor: {
+                  au_nome: autor?.au_nome || 'Autor desconhecido'
+                }
               }
             }
-          }
-        })) as unknown as Reserva[];
+          };
+        }) as unknown as Reserva[];
         setReservas(reservasTransformadas);
       }
     } catch (error) {
