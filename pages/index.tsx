@@ -104,6 +104,50 @@ export default function HomePage() {
     }
   };
 
+  const handleAprovarReserva = async (reservaId: number) => {
+    try {
+      const { error } = await import('../lib/supabase').then(({ supabase }) =>
+        supabase
+          .from('reserva')
+          .update({ res_status: 'aprovada' })
+          .eq('res_cod', reservaId)
+      );
+
+      if (error) {
+        console.error('Erro ao aprovar reserva:', error);
+        alert('Erro ao aprovar reserva');
+      } else {
+        alert('Reserva aprovada com sucesso!');
+        fetchReservasPendentes();
+      }
+    } catch (error) {
+      console.error('Erro ao aprovar reserva:', error);
+      alert('Erro ao aprovar reserva');
+    }
+  };
+
+  const handleRejeitarReserva = async (reservaId: number) => {
+    try {
+      const { error } = await import('../lib/supabase').then(({ supabase }) =>
+        supabase
+          .from('reserva')
+          .update({ res_status: 'rejeitada' })
+          .eq('res_cod', reservaId)
+      );
+
+      if (error) {
+        console.error('Erro ao rejeitar reserva:', error);
+        alert('Erro ao rejeitar reserva');
+      } else {
+        alert('Reserva rejeitada com sucesso!');
+        fetchReservasPendentes();
+      }
+    } catch (error) {
+      console.error('Erro ao rejeitar reserva:', error);
+      alert('Erro ao rejeitar reserva');
+    }
+  };
+
   const formatDate = (date: string): string => {
     try {
       return new Date(date).toLocaleDateString('pt-BR');
@@ -217,21 +261,47 @@ export default function HomePage() {
           {reservasPendentes.length > 0 && (
             <div className="row mt-4">
               <div className="col-12">
-                <div className="alert alert-info" role="alert">
-                  <h4 className="alert-heading">📋 Reservas Pendentes</h4>
-                  <p>Há {reservasPendentes.length} reserva(s) aguardando aprovação:</p>
-                  <ul className="mb-0">
-                    {reservasPendentes.map((reserva) => (
-                      <li key={reserva.res_cod}>
-                        <strong>{reserva.ut_nome}</strong> - "{reserva.li_titulo}"
-                        (Data: {formatDate(reserva.res_data)})
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-3">
-                    <Link href="/devolucoes" className="btn btn-primary btn-sm">
-                      Gerenciar Reservas
-                    </Link>
+                <div className="card">
+                  <div className="card-header">
+                    <h5>📋 Reservas Pendentes</h5>
+                  </div>
+                  <div className="card-body">
+                    <p>Há {reservasPendentes.length} reserva(s) aguardando aprovação:</p>
+                    <div className="table-responsive">
+                      <table className="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Utente</th>
+                            <th>Livro</th>
+                            <th>Data da Reserva</th>
+                            <th>Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reservasPendentes.map((reserva) => (
+                            <tr key={reserva.res_cod}>
+                              <td><strong>{reserva.ut_nome}</strong></td>
+                              <td>{reserva.li_titulo}</td>
+                              <td>{formatDate(reserva.res_data)}</td>
+                              <td>
+                                <button
+                                  className="btn btn-success btn-sm me-2"
+                                  onClick={() => handleAprovarReserva(reserva.res_cod)}
+                                >
+                                  <i className="fas fa-check"></i> Aprovar
+                                </button>
+                                <button
+                                  className="btn btn-danger btn-sm"
+                                  onClick={() => handleRejeitarReserva(reserva.res_cod)}
+                                >
+                                  <i className="fas fa-times"></i> Rejeitar
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>

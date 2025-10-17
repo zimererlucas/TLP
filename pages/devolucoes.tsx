@@ -256,55 +256,7 @@ export default function DevolucoesPage() {
         </div>
       </div>
 
-      {reservas.length > 0 && (
-        <div className="row">
-          <div className="col-12">
-            <div className="card">
-              <div className="card-header">
-                <h5>📋 Reservas Pendentes</h5>
-              </div>
-              <div className="card-body">
-                <p>Há {reservas.length} reserva(s) aguardando aprovação:</p>
-                <div className="table-responsive">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>Utente</th>
-                        <th>Livro</th>
-                        <th>Data da Reserva</th>
-                        <th>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reservas.map((reserva) => (
-                        <tr key={reserva.res_cod}>
-                          <td><strong>{reserva.utente.ut_nome}</strong></td>
-                          <td>{reserva.exemplar.livro.li_titulo}</td>
-                          <td>{formatDate(reserva.res_data)}</td>
-                          <td>
-                            <button
-                              className="btn btn-success btn-sm me-2"
-                              onClick={() => handleAprovarReserva(reserva.res_cod)}
-                            >
-                              <i className="fas fa-check"></i> Aprovar
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleRejeitarReserva(reserva.res_cod)}
-                            >
-                              <i className="fas fa-times"></i> Rejeitar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {message && (
         <div
