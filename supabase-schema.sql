@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS requisicao (
     re_ut_cod INTEGER NOT NULL REFERENCES utente(ut_cod) ON DELETE CASCADE,
     re_lex_cod INTEGER NOT NULL REFERENCES livro_exemplar(lex_cod) ON DELETE CASCADE,
     re_data_requisicao DATE NOT NULL DEFAULT CURRENT_DATE,
+    re_data_prevista DATE,
     re_data_devolucao DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

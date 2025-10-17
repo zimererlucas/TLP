@@ -163,13 +163,19 @@ async function handlePost(req, res) {
       return res.status(400).json({ error: 'Exemplar não está disponível' })
     }
 
+    // Calcular data prevista (14 dias a partir da data de requisição)
+    const dataRequisicao = re_data_requisicao || new Date().toISOString().split('T')[0];
+    const dataPrevista = new Date(dataRequisicao);
+    dataPrevista.setDate(dataPrevista.getDate() + 14);
+
     // Criar a requisição
     const { data: novaRequisicao, error } = await supabaseAdmin
       .from('requisicao')
       .insert({
         re_ut_cod,
         re_lex_cod,
-        re_data_requisicao: re_data_requisicao || new Date().toISOString().split('T')[0]
+        re_data_requisicao: dataRequisicao,
+        re_data_prevista: dataPrevista.toISOString().split('T')[0]
       })
       .select()
       .single()

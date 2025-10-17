@@ -45,15 +45,14 @@ export default function HomePage() {
       const hoje = new Date();
       const emprestimos = (json.data || [])
         .filter((item: any) => {
-          const dataRequisicao = new Date(item.re_data_requisicao);
-          const diasEmprestado = Math.floor((hoje.getTime() - dataRequisicao.getTime()) / (1000 * 60 * 60 * 24));
-          return diasEmprestado > 14;
+          const dataPrevista = new Date(item.re_data_prevista);
+          return dataPrevista < hoje && !item.re_data_devolucao;
         })
         .map((item: any) => ({
           re_cod: item.re_cod,
           li_titulo: item.exemplar?.livro?.li_titulo || 'Livro',
           ut_nome: item.utente?.ut_nome || 'Utente',
-          re_data_prevista: item.re_data_requisicao,
+          re_data_prevista: item.re_data_prevista,
         }));
 
       setEmprestimosAtraso(emprestimos);
@@ -159,13 +158,17 @@ export default function HomePage() {
         return;
       }
 
-      // Criar empréstimo ativo
+      // Criar empréstimo ativo com data prevista (14 dias)
+      const dataPrevista = new Date();
+      dataPrevista.setDate(dataPrevista.getDate() + 14);
+
       const { error: createError } = await supabase
         .from('requisicao')
         .insert({
           re_ut_cod: reserva.res_ut_cod,
           re_lex_cod: exemplarDisponivel.lex_cod,
-          re_data_requisicao: new Date().toISOString().split('T')[0]
+          re_data_requisicao: new Date().toISOString().split('T')[0],
+          re_data_prevista: dataPrevista.toISOString().split('T')[0]
         });
 
       if (createError) {
