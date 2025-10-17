@@ -27,8 +27,11 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchEmprestimosAtraso();
-    fetchReservasPendentes();
+    const loadData = async () => {
+      await Promise.all([fetchEmprestimosAtraso(), fetchReservasPendentes()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const fetchEmprestimosAtraso = async () => {
