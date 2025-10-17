@@ -126,9 +126,10 @@ export default function HomePage() {
 
       // Buscar exemplar disponível para o livro
       const { data: exemplares, error: exemplarError } = await supabase
-        .from('exemplar')
+        .from('livro_exemplar')
         .select('lex_cod')
-        .eq('lex_li_cod', reserva.res_li_cod);
+        .eq('lex_li_cod', reserva.res_li_cod)
+        .eq('lex_disponivel', true);
 
       if (exemplarError || !exemplares || exemplares.length === 0) {
         console.error('Erro ao buscar exemplares:', exemplarError);

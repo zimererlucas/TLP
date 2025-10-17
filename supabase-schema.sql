@@ -80,6 +80,17 @@ CREATE TABLE IF NOT EXISTS utente (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Tabela de reservas
+CREATE TABLE IF NOT EXISTS reserva (
+    res_cod SERIAL PRIMARY KEY,
+    res_ut_cod INTEGER NOT NULL REFERENCES utente(ut_cod) ON DELETE CASCADE,
+    res_li_cod INTEGER NOT NULL REFERENCES livro(li_cod) ON DELETE CASCADE,
+    res_data DATE NOT NULL DEFAULT CURRENT_DATE,
+    res_status VARCHAR(20) DEFAULT 'pendente',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Tabela de requisições (empréstimos)
 CREATE TABLE IF NOT EXISTS requisicao (
     re_cod SERIAL PRIMARY KEY,
@@ -127,6 +138,7 @@ CREATE TRIGGER update_autor_updated_at BEFORE UPDATE ON autor FOR EACH ROW EXECU
 CREATE TRIGGER update_livro_updated_at BEFORE UPDATE ON livro FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_livro_exemplar_updated_at BEFORE UPDATE ON livro_exemplar FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_utente_updated_at BEFORE UPDATE ON utente FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_reserva_updated_at BEFORE UPDATE ON reserva FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_requisicao_updated_at BEFORE UPDATE ON requisicao FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- RLS (Row Level Security) - Configuração básica
@@ -141,6 +153,7 @@ ALTER TABLE autor ENABLE ROW LEVEL SECURITY;
 ALTER TABLE livro ENABLE ROW LEVEL SECURITY;
 ALTER TABLE livro_exemplar ENABLE ROW LEVEL SECURITY;
 ALTER TABLE utente ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reserva ENABLE ROW LEVEL SECURITY;
 ALTER TABLE requisicao ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de leitura pública para dados de referência
@@ -151,6 +164,7 @@ CREATE POLICY "Permitir leitura pública de autores" ON autor FOR SELECT USING (
 CREATE POLICY "Permitir leitura pública de livros" ON livro FOR SELECT USING (true);
 CREATE POLICY "Permitir leitura pública de exemplares" ON livro_exemplar FOR SELECT USING (true);
 CREATE POLICY "Permitir leitura pública de utentes" ON utente FOR SELECT USING (true);
+CREATE POLICY "Permitir leitura pública de reservas" ON reserva FOR SELECT USING (true);
 CREATE POLICY "Permitir leitura pública de requisições" ON requisicao FOR SELECT USING (true);
 
 -- Políticas de escrita para usuários autenticados
@@ -161,6 +175,7 @@ CREATE POLICY "Permitir escrita de autores para usuários autenticados" ON autor
 CREATE POLICY "Permitir escrita de livros para usuários autenticados" ON livro FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Permitir escrita de exemplares para usuários autenticados" ON livro_exemplar FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Permitir escrita de utentes para usuários autenticados" ON utente FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Permitir escrita de reservas para usuários autenticados" ON reserva FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Permitir escrita de requisições para usuários autenticados" ON requisicao FOR ALL USING (auth.role() = 'authenticated');
 
 -- Comentários para documentação
@@ -171,6 +186,7 @@ COMMENT ON TABLE autor IS 'Autores de livros';
 COMMENT ON TABLE livro IS 'Catálogo de livros';
 COMMENT ON TABLE livro_exemplar IS 'Exemplares físicos dos livros';
 COMMENT ON TABLE utente IS 'Usuários da biblioteca';
+COMMENT ON TABLE reserva IS 'Reservas de livros';
 COMMENT ON TABLE requisicao IS 'Empréstimos e devoluções';
 
 -- Inserir dados de exemplo (convertidos do MySQL original)
