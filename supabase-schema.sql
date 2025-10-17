@@ -314,20 +314,20 @@ INSERT INTO utente (ut_nome, ut_nif, ut_email, ut_tlm, ut_morada, ut_cod_postal)
 ON CONFLICT DO NOTHING;
 
 -- Inserir empréstimos de exemplo
-INSERT INTO requisicao (re_ut_cod, re_lex_cod, re_data_requisicao, re_data_devolucao) VALUES
+INSERT INTO requisicao (re_ut_cod, re_lex_cod, re_data_requisicao, re_data_prevista, re_data_devolucao) VALUES
 -- Empréstimos devolvidos
-(1, 3, '2024-01-15', '2024-01-28'),
-(2, 5, '2024-01-20', '2024-02-01'),
-(3, 9, '2024-02-01', '2024-02-14'),
-(4, 11, '2024-02-10', '2024-02-23'),
-(5, 15, '2024-02-15', '2024-02-28'),
+(1, 3, '2024-01-15', '2024-01-29', '2024-01-28'),
+(2, 5, '2024-01-20', '2024-02-03', '2024-02-01'),
+(3, 9, '2024-02-01', '2024-02-15', '2024-02-14'),
+(4, 11, '2024-02-10', '2024-02-24', '2024-02-23'),
+(5, 15, '2024-02-15', '2024-03-01', '2024-02-28'),
 -- Empréstimos ativos (sem data de devolução)
-(6, 7, '2024-03-01', NULL),
-(7, 13, '2024-03-05', NULL),
-(8, 17, '2024-03-10', NULL),
+(6, 7, '2024-03-01', '2024-03-15', NULL),
+(7, 13, '2024-03-05', '2024-03-19', NULL),
+(8, 17, '2024-03-10', '2024-03-24', NULL),
 -- Empréstimos em atraso
-(9, 2, '2024-02-20', NULL),
-(10, 6, '2024-02-25', NULL)
+(9, 2, '2024-02-20', '2024-03-06', NULL),
+(10, 6, '2024-02-25', '2024-03-11', NULL)
 ON CONFLICT DO NOTHING;
 
 -- Atualizar exemplares como indisponíveis para os empréstimos ativos
