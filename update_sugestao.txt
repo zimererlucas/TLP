@@ -1,0 +1,5 @@
+# Atualização de dependências para login Google web
+# Atualize supabase_flutter e supabase para as versões mais recentes recomendadas para login social web.
+dependencies:
+  supabase_flutter: ^2.5.5 # ou a última versão estável disponível
+  supabase: ^2.0.8 # ou a última versão estável disponível
