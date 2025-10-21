@@ -108,88 +108,19 @@ export default function HomePage() {
 
   const handleAprovarReserva = async (reservaId: number) => {
     try {
-      const { supabase } = await import('../lib/supabase');
+      const response = await fetch(`/api/reservas/${reservaId}/aprovar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      // Buscar detalhes da reserva
-      const { data: reserva, error: reservaError } = await supabase
-        .from('reserva')
-        .select('res_cod, res_ut_cod, res_li_cod')
-        .eq('res_cod', reservaId)
-        .single();
+      const result = await response.json();
 
-      if (reservaError || !reserva) {
-        console.error('Erro ao buscar reserva:', reservaError);
-        alert('Erro ao buscar reserva');
-        return;
-      }
-
-      // Buscar exemplar disponível para o livro
-      const { data: exemplares, error: exemplarError } = await supabase
-        .from('livro_exemplar')
-        .select('lex_cod')
-        .eq('lex_li_cod', reserva.res_li_cod)
-        .eq('lex_disponivel', true);
-
-      if (exemplarError || !exemplares || exemplares.length === 0) {
-        console.error('Erro ao buscar exemplares:', exemplarError);
-        alert('Nenhum exemplar disponível para este livro');
-        return;
-      }
-
-      // Verificar quais exemplares estão disponíveis (não emprestados)
-      const exemplaresIds = exemplares.map(e => e.lex_cod);
-      const { data: emprestimosAtivos, error: emprestimoError } = await supabase
-        .from('requisicao')
-        .select('re_lex_cod')
-        .in('re_lex_cod', exemplaresIds)
-        .is('re_data_devolucao', null);
-
-      if (emprestimoError) {
-        console.error('Erro ao verificar empréstimos ativos:', emprestimoError);
-        alert('Erro ao verificar disponibilidade');
-        return;
-      }
-
-      const emprestadosIds = emprestimosAtivos?.map(e => e.re_lex_cod) || [];
-      const exemplarDisponivel = exemplares.find(e => !emprestadosIds.includes(e.lex_cod));
-
-      if (!exemplarDisponivel) {
-        alert('Todos os exemplares estão emprestados');
-        return;
-      }
-
-      // Criar empréstimo ativo com data prevista (14 dias)
-      const dataPrevista = new Date();
-      dataPrevista.setDate(dataPrevista.getDate() + 14);
-
-      const { error: createError } = await supabase
-        .from('requisicao')
-        .insert({
-          re_ut_cod: reserva.res_ut_cod,
-          re_lex_cod: exemplarDisponivel.lex_cod,
-          re_data_requisicao: new Date().toISOString().split('T')[0],
-          re_data_prevista: dataPrevista.toISOString().split('T')[0]
-        });
-
-      if (createError) {
-        console.error('Erro ao criar empréstimo:', createError);
-        alert('Erro ao criar empréstimo');
-        return;
-      }
-
-      // Atualizar status da reserva
-      const { error: updateError } = await supabase
-        .from('reserva')
-        .update({ res_status: 'aprovada' })
-        .eq('res_cod', reservaId);
-
-      if (updateError) {
-        console.error('Erro ao aprovar reserva:', updateError);
-        alert('Erro ao aprovar reserva');
-      } else {
-        alert('Reserva aprovada e empréstimo criado com sucesso!');
+      if (response.ok) {
+        alert(result.message || 'Reserva aprovada e empréstimo criado com sucesso!');
         fetchReservasPendentes();
         fetchEmprestimosAtraso(); // Atualizar lista de empréstimos ativos
+      } else {
+        alert(result.error || 'Erro ao aprovar reserva');
       }
     } catch (error) {
       console.error('Erro ao aprovar reserva:', error);

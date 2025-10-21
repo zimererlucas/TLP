@@ -201,17 +201,18 @@ export default function DevolucoesPage() {
 
   const handleAprovarReserva = async (reservaId: number) => {
     try {
-      const { error } = await supabase
-        .from('reserva')
-        .update({ res_status: 'aprovada' })
-        .eq('res_cod', reservaId);
+      const response = await fetch(`/api/reservas/${reservaId}/aprovar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      if (error) {
-        console.error('Erro ao aprovar reserva:', error);
-        setMessage({ type: 'error', text: 'Erro ao aprovar reserva' });
-      } else {
-        setMessage({ type: 'success', text: 'Reserva aprovada com sucesso!' });
+      const result = await response.json();
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: result.message || 'Reserva aprovada e empréstimo criado com sucesso!' });
         fetchReservasPendentes();
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Erro ao aprovar reserva' });
       }
     } catch (error) {
       console.error('Erro ao aprovar reserva:', error);
