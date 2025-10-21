@@ -50,6 +50,7 @@ async function handleGet(req, res) {
         .select(`
           re_cod,
           re_data_requisicao,
+          re_data_prevista,
           re_data_devolucao,
           utente:utente (
             ut_cod,
@@ -88,6 +89,7 @@ async function handleGet(req, res) {
       .select(`
         re_cod,
         re_data_requisicao,
+        re_data_prevista,
         re_data_devolucao,
         utente:utente (
           ut_cod,
