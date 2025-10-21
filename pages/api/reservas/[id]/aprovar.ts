@@ -84,19 +84,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('requisicao')
       .select('re_cod, re_data_prevista')
       .eq('re_ut_cod', reserva.res_ut_cod)
-      .is('re_data_devolucao', null);
+      .is('re_data_devolucao', null)
+      .lt('re_data_prevista', hoje);
 
     if (atrasoError) {
       console.error('Erro ao verificar empréstimos em atraso:', atrasoError);
       return res.status(500).json({ error: 'Erro ao verificar situação do utente' });
     }
 
-    // Verificar se há empréstimos em atraso (comparar com data atual)
-    const emprestimosEmAtraso = emprestimosAtraso?.filter(emprestimo => {
-      return emprestimo.re_data_prevista && emprestimo.re_data_prevista < hoje;
-    }) || [];
-
-    if (emprestimosEmAtraso.length > 0) {
+    if (emprestimosAtraso && emprestimosAtraso.length > 0) {
       return res.status(400).json({ error: 'Este utente possui empréstimos em atraso' });
     }
 
