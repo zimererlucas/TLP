@@ -17,6 +17,7 @@ interface Utente {
 interface Exemplar {
   lex_cod: number;
   lex_li_cod: number;
+  lex_estado: string;
   livro: {
     li_titulo: string;
     autor: {
@@ -210,7 +211,7 @@ export default function EmprestimosPage() {
                   <option value="">Selecione um exemplar</option>
                   {exemplares.map((exemplar) => (
                     <option key={exemplar.lex_cod} value={exemplar.lex_cod}>
-                      {exemplar.livro.li_titulo} - {exemplar.livro.autor.au_nome}
+                      #{exemplar.lex_cod} - {exemplar.livro.li_titulo} - {exemplar.livro.autor.au_nome} ({exemplar.lex_estado})
                     </option>
                   ))}
                 </select>
@@ -227,20 +228,6 @@ export default function EmprestimosPage() {
         </div>
       </div>
 
-      <div className="row mt-4">
-        <div className="col-12">
-          <div className="d-grid gap-2">
-            <button
-              className="btn btn-success btn-lg"
-              onClick={handleEmprestimo}
-              disabled={loading || !selectedUtente || cart.length === 0}
-            >
-              {loading ? 'Registrando...' : 'Finalizar Empréstimos'}
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Carrinho */}
       <div className="row mt-4">
         <div className="col-12">
@@ -253,15 +240,32 @@ export default function EmprestimosPage() {
                 <div className="text-muted">Nenhum exemplar no carrinho.</div>
               ) : (
                 <ul className="list-group">
-                  {cart.map((lex) => (
-                    <li key={lex} className="list-group-item d-flex justify-content-between align-items-center">
-                      Exemplar #{lex}
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => removeFromCart(lex)}>Remover</button>
-                    </li>
-                  ))}
+                  {cart.map((lex) => {
+                    const exemplar = exemplares.find(e => e.lex_cod === lex);
+                    return (
+                      <li key={lex} className="list-group-item d-flex justify-content-between align-items-center">
+                        Exemplar #{lex} - {exemplar ? `${exemplar.livro.li_titulo} (${exemplar.lex_estado})` : ''}
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => removeFromCart(lex)}>Remover</button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-4">
+        <div className="col-12">
+          <div className="d-grid gap-2">
+            <button
+              className="btn btn-success btn-lg"
+              onClick={handleEmprestimo}
+              disabled={loading || !selectedUtente || cart.length === 0}
+            >
+              {loading ? 'Registrando...' : 'Finalizar Empréstimos'}
+            </button>
           </div>
         </div>
       </div>

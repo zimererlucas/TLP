@@ -120,11 +120,27 @@ export default function HomePage() {
         fetchReservasPendentes();
         fetchEmprestimosAtraso(); // Atualizar lista de empréstimos ativos
       } else {
-        alert(result.error || 'Erro ao aprovar reserva');
+        console.error('Erro ao aprovar reserva - Detalhes completos:', result);
+        const mensagemErro = result.error || 'Erro ao aprovar reserva';
+        const detalhes = result.debug || result.details;
+        let mensagemCompleta = mensagemErro;
+        
+        if (detalhes) {
+          mensagemCompleta += `\n\n📊 Informações de Debug:\n`;
+          mensagemCompleta += `Total de exemplares: ${detalhes.totalExemplares || 'N/A'}\n`;
+          mensagemCompleta += `Exemplares IDs: ${JSON.stringify(detalhes.exemplaresIds || [])}\n`;
+          mensagemCompleta += `Empréstimos ativos: ${detalhes.totalEmprestimosAtivos || detalhes.emprestimosAtivos || 'N/A'}\n`;
+          mensagemCompleta += `IDs emprestados: ${JSON.stringify(detalhes.emprestadosIds || [])}\n`;
+          if (detalhes.detalhesEmprestimos) {
+            mensagemCompleta += `\nDetalhes dos empréstimos:\n${JSON.stringify(detalhes.detalhesEmprestimos, null, 2)}`;
+          }
+        }
+        
+        alert(mensagemCompleta);
       }
     } catch (error) {
       console.error('Erro ao aprovar reserva:', error);
-      alert('Erro ao aprovar reserva');
+      alert('Erro ao aprovar reserva: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
     }
   };
 
