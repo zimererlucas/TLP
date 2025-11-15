@@ -24,10 +24,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Este exemplar não está disponível para empréstimo' });
     }
 
-    // Verificar se utente tem empréstimos em atraso
+    // Verificação de empréstimos em atraso REMOVIDA
+    // Permitir empréstimos mesmo que o utente tenha empréstimos em atraso
+    // Apenas registrar no log para informação (opcional)
     const temEmprestimosAtraso = await hasOverdueLoans(utente_id);
     if (temEmprestimosAtraso) {
-      return res.status(400).json({ error: 'Este usuário possui empréstimos em atraso e não pode fazer novos empréstimos' });
+      console.log('⚠️ Utente possui empréstimos em atraso, mas permitindo novo empréstimo');
     }
 
     // Calcular datas

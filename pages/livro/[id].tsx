@@ -50,6 +50,8 @@ export default function LivroDetalhesPage() {
   const [showEmprestimoModal, setShowEmprestimoModal] = useState(false);
   const [emprestimoLoading, setEmprestimoLoading] = useState(false);
   const [emprestimoError, setEmprestimoError] = useState('');
+  const [utenteQuery, setUtenteQuery] = useState('');
+  const [utenteResults, setUtenteResults] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -136,6 +138,8 @@ export default function LivroDetalhesPage() {
       await fetchLivroDetalhes(id as string);
       setShowEmprestimoModal(false);
       setEmprestimoForm({ exemplar_id: '', utente_id: '', utente_nome: '' });
+      setUtenteQuery('');
+      setUtenteResults([]);
 
       // Mostrar mensagem de sucesso
       alert('Empréstimo registrado com sucesso!');
@@ -148,15 +152,18 @@ export default function LivroDetalhesPage() {
   };
 
   const searchUtentes = async (query: string) => {
-    if (query.length < 2) return [];
+    if (!query || query.trim().length < 2) {
+      setUtenteResults([]);
+      return;
+    }
 
     try {
       const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
       const data = await response.json();
-      return data || [];
+      setUtenteResults(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
-      return [];
+      setUtenteResults([]);
     }
   };
 
@@ -432,7 +439,12 @@ export default function LivroDetalhesPage() {
                 <button
                   type="button"
                   className="btn-close"
-                  onClick={() => setShowEmprestimoModal(false)}
+                  onClick={() => {
+                    setShowEmprestimoModal(false);
+                    setUtenteQuery('');
+                    setUtenteResults([]);
+                    setEmprestimoForm({ exemplar_id: '', utente_id: '', utente_nome: '' });
+                  }}
                 ></button>
               </div>
               <form onSubmit={handleEmprestimo}>
@@ -459,28 +471,57 @@ export default function LivroDetalhesPage() {
 
                   <div className="mb-3">
                     <label htmlFor="utente_search" className="form-label required">
-                      Buscar Usuário
+                      Buscar Utilizador
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       id="utente_search"
-                      placeholder="Digite o nome ou email do usuário"
-                      onChange={async (e) => {
+                      placeholder="Digite nome, email, NIF ou telefone"
+                      value={utenteQuery}
+                      onChange={(e) => {
                         const query = e.target.value;
-                        if (query.length >= 2) {
-                          const utentes = await searchUtentes(query);
-                          // Implementar dropdown de resultados aqui
-                        }
+                        setUtenteQuery(query);
+                        searchUtentes(query);
                       }}
-                    />
-                    <input
-                      type="hidden"
-                      id="utente_id"
-                      value={emprestimoForm.utente_id}
-                      onChange={(e) => setEmprestimoForm({ ...emprestimoForm, utente_id: e.target.value })}
                       required
                     />
+                    {utenteResults.length > 0 && (
+                      <div className="list-group mt-2" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {utenteResults.map((utente) => (
+                          <button
+                            key={utente.ut_cod}
+                            type="button"
+                            className="list-group-item list-group-item-action"
+                            onClick={() => {
+                              setEmprestimoForm({
+                                ...emprestimoForm,
+                                utente_id: utente.ut_cod.toString(),
+                                utente_nome: utente.ut_nome
+                              });
+                              setUtenteQuery(`${utente.ut_nome}${utente.ut_email ? ' (' + utente.ut_email + ')' : ''}${utente.ut_nif ? ' - NIF: ' + utente.ut_nif : ''}`);
+                              setUtenteResults([]);
+                            }}
+                          >
+                            <strong>{utente.ut_nome}</strong>
+                            {utente.ut_email && <span className="text-muted ms-2">({utente.ut_email})</span>}
+                            {utente.ut_nif && <span className="text-muted ms-2">- NIF: {utente.ut_nif}</span>}
+                            {utente.ut_tlm && <span className="text-muted ms-2">- Tel: {utente.ut_tlm}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {utenteQuery && !emprestimoForm.utente_id && utenteResults.length === 0 && utenteQuery.length >= 2 && (
+                      <div className="text-muted mt-1 small">
+                        Nenhum utilizador encontrado. Tente buscar por nome, email, NIF ou telefone.
+                      </div>
+                    )}
+                    {emprestimoForm.utente_id && (
+                      <div className="text-success mt-1 small">
+                        <i className="fas fa-check-circle me-1"></i>
+                        Utilizador selecionado: {emprestimoForm.utente_nome}
+                      </div>
+                    )}
                   </div>
 
                   {emprestimoError && (
@@ -495,7 +536,6 @@ export default function LivroDetalhesPage() {
                     <ul className="mb-0 mt-2">
                       <li>O prazo de empréstimo é de 14 dias</li>
                       <li>Data de devolução prevista: <strong>{formatDate(calculateDueDate(14))}</strong></li>
-                      <li>Usuários com empréstimos em atraso não podem fazer novos empréstimos</li>
                     </ul>
                   </div>
                 </div>
